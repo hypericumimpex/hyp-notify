@@ -1,0 +1,328 @@
+#smpush_notification_header{
+	background-color: #f8f8f8;
+    padding: 20px 30px 40px 30px;
+	-moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+	font-family: "Open Sans", Arial, sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 13px;
+	border-radius: 5px;
+}
+#smpush_notification_header p{
+	margin:0;padding:0;border:0;
+	font-size: 15px;
+    line-height: 20px;
+	margin-bottom:15px;
+	font-family: "Open Sans", Arial, sans-serif;
+}
+#smpush_head_title{
+	margin:0;padding:0;border:0;
+	margin-bottom:15px;
+	font-family: "Open Sans", Arial, sans-serif;
+	font-size: 20px;
+    width: 86%;
+    line-height: 27px;
+}
+#smpush_notification_header i{
+	margin:0;padding:0;border:0;
+	display:inline-block;
+	background-image:url('../images/info.png');
+	background-size: 12px;
+	height: 12px;
+	width: 12px;
+	margin-left: 4px;
+    opacity: 0.6;
+}
+#smpush_notification_header h3{
+	margin:0;padding:0;border:0;
+	color: #666;
+	font-weight: bold;
+	font-size: 17px;
+	margin-top:10px;
+	margin-bottom:5px;
+	font-family: "Open Sans", Arial, sans-serif;
+}
+#smpush_notification_header button, #smpush_notification_footer .smpushBox button{
+	margin:0;padding:0;border:0;
+	height: 40px;
+    font-size: 13px;
+    color: #666;
+	background-color: #f1f1f1;
+    text-shadow: 0 1px 0 #fff;
+    text-decoration: none;
+    background-image: linear-gradient(#fcfcfc, #f1f1f1);
+    border-width: 1px;
+    border-style: solid;
+    border-top-color: #e1e1e1;
+    border-left-color: #e1e1e1;
+    border-right-color: #e1e1e1;
+    border-bottom-color: #ddd;
+    font-family: "Open Sans", Arial, sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    display: inline-block;
+    border-radius: 3px;
+    padding: 0px 13px;
+    cursor: pointer;
+    line-height: 34px;
+    white-space: nowrap;
+}
+#smpush_receive_on button{padding: 0 10px 0 0;}
+#smpush_receive_on button img{
+	display: inline-block!important;margin:0;padding:0;border:0;box-shadow:none;border-radius:0;
+	position:absolute;
+	margin: 5px 7px;
+}
+#smpush_receive_on button span{margin:0;padding:0;border:0;margin-left: 37px;}
+#smpush_receive_on button label{
+	margin:0;padding:0;border:0;
+	display: inline-block;
+    padding-left: 10px;
+    border-left: 1px solid #ccc;
+    margin-left: 16px;
+}
+#smpush_notification_footer {
+    padding: 20px;
+}
+#smpush_notification_footer .smpushBox{
+	display: inline-block;
+	text-align: center;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin: 0 10px 10px 0;
+    border-radius: 3px;
+    font-size: 0;
+    width: 19%;
+    min-width: 173px;
+    cursor: pointer;
+}
+#smpush_notification_footer .smpushBox strong{
+	margin:0;padding:0;border:0;box-shadow:none;border-radius:0;
+	font-family: "Open Sans Semibold", "Open Sans", Arial, sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 16px;
+    display: block;
+}
+#smpush_notification_footer .smpushBox img{
+	max-width: 100%;
+	margin:0;padding:0;border:0;box-shadow:none;border-radius:0;
+	height: 100px;
+    margin: 15px 0;
+}
+#smpush_notification_footer .smpushBox button{
+	text-align: center;
+	width: 100%;
+    height: 40px;
+    font-size: 14px;
+}
+#smpush_notification_footer .smpushBoxSelected{
+	border-color: #eee;
+}
+#smpush_notification_footer .smpushBoxSelected strong{color: #999;}
+#smpush_notification_footer .smpushBoxSelected button{color: #999;}
+#smpush_notification_footer .smpushBox .smpushBox_unsbtn{position: relative;display:none}
+#smpush_notification_footer .smpushBox .smpushBox_unsbtn span{margin-left: 16px;display: block;}
+#smpush_notification_footer .smpushBox .smpushBox_unsbtn img{margin:0;padding:0;border:0;box-shadow:none;border-radius:0;height:24px;margin: 5px;position: absolute;left: 23px;}
+#smpush_notification_footer .smpushBoxSelected .smpushBox_sbtn{display:none}
+#smpush_notification_footer .smpushBoxSelected .smpushBox_unsbtn{display:block}
+#smpush_notification_footer h2{
+	margin:0;padding:0;border:0;box-shadow:none;border-radius:0;
+	font-size: 21px;
+    line-height: 30px;
+	font-family: "Open Sans", Arial, sans-serif;
+    font-style: normal;
+	color:#000;
+    margin-bottom: 10px;
+}
+#smpush_subscription_form{display:block!important}
+#smpush_agreement_hint{}
+#smpush_div_button{
+	padding-top: 15px;
+    border-top: 1px solid #ccc;
+    width: 74%;
+    margin: auto;
+}
+#smpush_save_button{
+	margin:0 auto;padding:0;border:0;box-shadow:none;border-radius:0;
+	font-family: "Open Sans Semibold", "Open Sans", Arial, sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    display: block;
+	white-space: nowrap;
+    text-align: center;
+	height: 54px;
+    line-height: 54px;
+    padding: 0 20px;
+    font-size: 15px;
+    border-width: 0;
+    border-radius: 4px;	
+	text-shadow: 0 1px 0 rgba(0, 51, 83, 0.3);
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    background-color: #1b9dec;
+    background-image: -moz-linear-gradient(top, #1da7ee, #178ee9);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#1da7ee), to(#178ee9));
+    background-image: -webkit-linear-gradient(top, #1da7ee, #178ee9);
+    background-image: -o-linear-gradient(top, #1da7ee, #178ee9);
+    background-image: linear-gradient(to bottom, #1da7ee, #178ee9);
+    background-repeat: repeat-x;
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1da7ee', endColorstr='#ff178ee9', GradientType=0);
+    -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.03);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.03);
+	background: #1da7ee;
+    color: #fff;
+    border: 1px solid #0073bb;
+}
+#smpush_div_button.smpush_div_button_gdpr_enabled{
+  width: 100%;
+}
+#smpush_div_button.smpush_div_button_gdpr_enabled #smpush_save_button{
+  display: inline-block;
+}
+#smpush_delete_button{
+  text-decoration: underline;
+  float: right;
+  margin:0 auto;padding:0;border:0;box-shadow:none;border-radius:0;
+  font-family: "Open Sans Semibold", "Open Sans", Arial, sans-serif;
+  font-style: normal;
+  font-weight: 300;
+  display: inline-block;
+  white-space: nowrap;
+  text-align: center;
+  height: 54px;
+  line-height: 54px;
+  padding: 0 20px;
+  font-size: 15px;
+  border-width: 0;
+  border-radius: 4px;
+  text-shadow: 0 1px 0 rgba(0, 51, 83, 0.3);
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  border-radius: 3px;
+  background-color: #e43700;
+  -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.03);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2), inset 0 1px rgba(255,255,255,0.03);
+  color: #fff;
+  border: 1px solid #000;
+}
+#smpush_delete_button:hover{background-color: #dc6853;background: #dc6853;}
+.smpush_install_instructions{
+	display:none;
+	text-align: center;
+    padding:20px!important;
+    margin-bottom: 0!important;
+    font-size: 14px!important;
+	background: #fff!important;
+    border-radius: 5px!important;
+    margin-top: 22px!important;
+}
+.smpush_install_instructions button{
+	font-size: 12px!important;
+    height: 33px!important;
+    font-weight: 400!important;
+}
+#smpush_web_instructions {line-height: 33px!important;font-size: 18px!important;}
+#smpush_mobile_instructions, #smpush_msn_instructions {
+	font-size: 25px!important;
+	line-height: 40px!important;
+	font-weight: 400;
+}
+.smpush_install_instructions img{
+	display: inline-block!important;margin:0!important;padding:0!important;border:0!important;box-shadow:none!important;border-radius:0!important;
+	margin:25px 5px 0 5px!important;
+}
+#smpush_msn_woo_checkout{
+	font-size: 16px;
+}
+#smpush_msn_woo_checkout .fb-send-to-messenger{
+	width: 100%;
+	margin:15px auto;
+	text-align:center;
+}
+/*google map style*/
+#smio-gmap-container {
+	position: relative;
+}
+#smio-gmap {
+width: 100%;
+height: 600px;
+}
+#smio-realtime-gmap {
+width: 100%;
+height: 650px;
+}
+#smio_gmap_search {
+z-index: 9999;
+position: absolute;
+left:126px;
+top: 16px;
+}
+.smio_gmap_input {
+border: 1px solid transparent;
+border-radius: 2px 0 0 2px;
+box-sizing: border-box;
+-moz-box-sizing: border-box;
+height: 32px;
+outline: none;
+box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+background-color: #fff;
+padding: 0 11px 0 13px;
+text-overflow: ellipsis;
+width: 400px;
+margin-left:5px;
+max-width: 100%;
+}
+.smio_gmap_input:focus {
+border-color: #4d90fe;
+}
+
+/*history page*/
+#smpush-notification-center{margin:0;list-style:none;}#smpush-notification-center li{padding:10px;border:solid 1px #00BCD4;background:#f5fbfd;border-radius:5px;margin: 5px 0;}#smpush-notification-center li a{display: block;text-decoration:none;color:#000}#smpush-notification-center li span{display: block;font-size:12px;color:#6d8ba2;}
+/*FB messenger call us button*/
+.smpush-btn-fb-livechat,.smpush-btn-fb-widget{display:none}.smpush-btn-ctrlq.fb-close{position:absolute;right:3px;cursor:pointer}.smpush-btn-ctrlq.smpush-btn-fb-button img{margin: 5px 5px 0 10px;float: left;border:0;margin-right: 5px}.smpush-btn-ctrlq.smpush-btn-fb-button{display: inline-block;z-index:99;text-decoration: none!important;text-align:center;border:0;outline:0;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;-ms-border-radius:3px;-o-border-radius:3px;box-shadow:0 1px 6px rgba(0,0,0,.06),0 2px 32px rgba(0,0,0,.16);-webkit-transition:box-shadow .2s ease;transition:all .2s ease-in-out}.smpush-btn-ctrlq.smpush-btn-fb-button:focus,.smpush-btn-ctrlq.smpush-btn-fb-button:hover{transform:scale(1.1);box-shadow:0 2px 8px rgba(0,0,0,.09),0 4px 40px rgba(0,0,0,.24)}.smpush-btn-fb-widget{background:#fff;z-index:100;position:absolute;width:360px;height:400px;overflow:hidden;opacity:0;border-radius:6px;-o-border-radius:6px;-webkit-border-radius:6px;box-shadow:0 5px 40px rgba(0,0,0,.16);-webkit-box-shadow:0 5px 40px rgba(0,0,0,.16);-moz-box-shadow:0 5px 40px rgba(0,0,0,.16);-o-box-shadow:0 5px 40px rgba(0,0,0,.16)}.fb-credit{text-align:center;margin-top:8px}.fb-credit a{transition:none;color:#bec2c9;font-family:Helvetica,Arial,sans-serif;font-size:12px;text-decoration:none;border:0;font-weight:400}.smpush-btn-ctrlq.smpush-btn-fb-overlay{z-index:98;position:fixed;height:100vh;width:100vw;-webkit-transition:opacity .4s,visibility .4s;transition:opacity .4s,visibility .4s;top:0;left:0;background:rgba(0,0,0,.05);display:none}.smpush-btn-ctrlq.fb-close{z-index:4;padding:0 6px;background:#365899;font-weight:700;font-size:11px;color:#fff;margin:8px;border-radius:3px}.smpush-btn-ctrlq.fb-close::after{content:"x";font-family:sans-serif}
+/*FB login button*/
+.smpush-fblogin-button img{float: left;margin: 0 10px 0 10px;border:0;margin-right: 5px}.smpush-fblogin-button{display: inline-block;text-decoration: none!important;text-align:center;border:0;outline:0;border-radius:3px;-webkit-border-radius:3px;-moz-border-radius:3px;-ms-border-radius:3px;-o-border-radius:3px;box-shadow:0 1px 6px rgba(0,0,0,.06),0 2px 32px rgba(0,0,0,.16);-webkit-transition:box-shadow .2s ease;transition:all .2s ease-in-out}.smpush-fblogin-button:focus,.smpush-fblogin-button:hover{transform:scale(1.1);box-shadow:0 2px 8px rgba(0,0,0,.09),0 4px 40px rgba(0,0,0,.24)}
+
+#smpush_woo_waiting_button{display: block;margin-top: 14px;}
+
+@media (max-width: 1024px) {
+	#smpush_receive_on button{margin-top: 5px;}
+}
+@media (max-width: 500px) {
+	#smpush_notification_header{padding: 20px 10px 40px 10px;}
+	#smpush_receive_on button{font-size:11px}
+	#smio_gmap_search{width: 234px;top: 55px;left: 5px;}
+	.smio_gmap_input{margin-top: 5px;}
+	#smpush_head_title{font-size:16px}
+	#smpush_web_instructions, #smpush_mobile_instructions, #smpush_msn_instructions {font-size: 16px!important;}
+}
+@media (max-width: 600px) {
+	#smpush_notification_footer{padding: 20px 0;}
+	#smpush_notification_footer .smpushBox{width: 90%}
+}
+@media (max-width: 800px) and (min-width: 600px) {
+	#smpush_notification_footer{padding: 20px 0;}
+	#smpush_notification_footer .smpushBox strong{font-size: 13px;}
+	#smpush_notification_footer .smpushBox button{font-size:12px}
+	#smpush_notification_footer .smpushBox{width: 40%}
+	
+}
+@media (max-width: 915px) and (min-width: 800px) {
+	#smpush_notification_footer .smpushBox{width: 23%}
+	#smpush_notification_footer{padding: 20px 0;}
+	#smpush_notification_footer .smpushBox strong{font-size: 14px;}
+	#smpush_notification_footer .smpushBox button{font-size:13px}
+}
+@media (max-width: 1032px) and (min-width: 915px) {
+	#smpush_notification_footer h2{text-align: center;}
+	#smpush_notification_footer{padding: 20px 0 20px 67px;}
+    #smpush_notification_footer .smpushBox{width: 25%}
+}
+

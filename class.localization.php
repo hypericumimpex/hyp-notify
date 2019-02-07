@@ -1,0 +1,112 @@
+<?php
+
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
+class smpush_localization {
+
+  public static function facebook_langs() {
+    return array(
+      'af_ZA' => 'Afrikaans',
+      'ar_AR' => 'Arabic',
+      'az_AZ' => 'Azerbaijani',
+      'be_BY' => 'Belarusian',
+      'bg_BG' => 'Bulgarian',
+      'bn_IN' => 'Bengali',
+      'bs_BA' => 'Bosnian',
+      'ca_ES' => 'Catalan',
+      'cs_CZ' => 'Czech',
+      'cy_GB' => 'Welsh',
+      'da_DK' => 'Danish',
+      'de_DE' => 'German',
+      'el_GR' => 'Greek',
+      'en_GB' => 'English (UK)',
+      'en_PI' => 'English (Pirate)',
+      'en_UD' => 'English (Upside Down)',
+      'en_US' => 'English (US)',
+      'eo_EO' => 'Esperanto',
+      'es_ES' => 'Spanish (Spain)',
+      'es_LA' => 'Spanish',
+      'et_EE' => 'Estonian',
+      'eu_ES' => 'Basque',
+      'fa_IR' => 'Persian',
+      'fb_LT' => 'Leet Speak',
+      'fi_FI' => 'Finnish',
+      'fo_FO' => 'Faroese',
+      'fr_CA' => 'French (Canada)',
+      'fr_FR' => 'French (France)',
+      'fy_NL' => 'Frisian',
+      'ga_IE' => 'Irish',
+      'gl_ES' => 'Galician',
+      'he_IL' => 'Hebrew',
+      'hi_IN' => 'Hindi',
+      'hr_HR' => 'Croatian',
+      'hu_HU' => 'Hungarian',
+      'hy_AM' => 'Armenian',
+      'id_ID' => 'Indonesian',
+      'is_IS' => 'Icelandic',
+      'it_IT' => 'Italian',
+      'ja_JP' => 'Japanese',
+      'ka_GE' => 'Georgian',
+      'km_KH' => 'Khmer',
+      'ko_KR' => 'Korean',
+      'ku_TR' => 'Kurdish',
+      'la_VA' => 'Latin',
+      'lt_LT' => 'Lithuanian',
+      'lv_LV' => 'Latvian',
+      'mk_MK' => 'Macedonian',
+      'ml_IN' => 'Malayalam',
+      'ms_MY' => 'Malay',
+      'nb_NO' => 'Norwegian (bokmal)',
+      'ne_NP' => 'Nepali',
+      'nl_NL' => 'Dutch',
+      'nn_NO' => 'Norwegian (nynorsk)',
+      'pa_IN' => 'Punjabi',
+      'pl_PL' => 'Polish',
+      'ps_AF' => 'Pashto',
+      'pt_BR' => 'Portuguese (Brazil)',
+      'pt_PT' => 'Portuguese (Portugal)',
+      'ro_RO' => 'Romanian',
+      'ru_RU' => 'Russian',
+      'sk_SK' => 'Slovak',
+      'sl_SI' => 'Slovenian',
+      'sq_AL' => 'Albanian',
+      'sr_RS' => 'Serbian',
+      'sv_SE' => 'Swedish',
+      'sw_KE' => 'Swahili',
+      'ta_IN' => 'Tamil',
+      'te_IN' => 'Telugu',
+      'th_TH' => 'Thai',
+      'tl_PH' => 'Filipino',
+      'tr_TR' => 'Turkish',
+      'uk_UA' => 'Ukrainian',
+      'vi_VN' => 'Vietnamese',
+      'zh_CN' => 'Simplified Chinese (China)',
+      'zh_HK' => 'Traditional Chinese (Hong Kong)',
+      'zh_TW' => 'Traditional Chinese (Taiwan)',
+    );
+  }
+  
+  public static function load_textdomain() {
+    load_plugin_textdomain('smpush-plugin-lang', false, basename(smpush_dir).'/language');
+  }
+  
+  public static function javascript() {
+    wp_localize_script('smpush-mainscript', 'smpush_jslang', array(
+    'event_no_post' => __('Please create at least one post of this post type to enable creating a push event for it', 'smpush-plugin-lang'),
+    'applytoall' => __('Action will be applied to all results, continue?', 'smpush-plugin-lang'),
+    'deleteconfirm' => __('Are you sure you want to continue?', 'smpush-plugin-lang'),
+    'savechangesconfirm' => __('Do you want to save current changes?', 'smpush-plugin-lang'),
+    'no_tokens_msg' => __('There is no tokens accept your choices', 'smpush-plugin-lang'),
+    'start_queuing' => __('Start queuing', 'smpush-plugin-lang'),
+    'token_in_queue' => __('token in the queue table', 'smpush-plugin-lang'),
+    'escaped_reconnect' => __('Escaped and try reconnect...', 'smpush-plugin-lang'),
+    'completed' => __('Completed', 'smpush-plugin-lang'),
+    'message_queuing_completed' => __('message queuing completed and start now in sending process', 'smpush-plugin-lang'),
+    'message_queuing_scheduling' => __('message queued successfully for scheduling send', 'smpush-plugin-lang'),
+    'exit_and_back' => __('Exit and return back', 'smpush-plugin-lang'),
+    'error_refresh' => __('Error ocurred refresh the page', 'smpush-plugin-lang'),
+    'start_feedback' => __('Start feedback service', 'smpush-plugin-lang'),
+    ));
+  }
+
+}
