@@ -1494,7 +1494,7 @@ class smpush_sendpush extends smpush_controller {
     if ($cronjob === true) {
       smpush_helper::$returnValue = 'cronjob';
     }
-    $siteurl = get_bloginfo('url');
+    $siteurl = get_bloginfo('wpurl');
     $message = str_replace(array('"','\''), '`', self::cleanString($message));
     $helper = new smpush_helper();
     $sendCounter = 0;
@@ -2148,7 +2148,7 @@ class smpush_sendpush extends smpush_controller {
         $auth = [
           'FCM' => self::$apisetting['chrome_apikey'],
           'VAPID' => [
-            'subject' => get_bloginfo('url'),
+            'subject' => get_bloginfo('wpurl'),
             'publicKey' => self::$apisetting['chrome_vapid_public'],
             'privateKey' => self::$apisetting['chrome_vapid_private'],
           ]
@@ -2187,7 +2187,7 @@ class smpush_sendpush extends smpush_controller {
         foreach ($subscriptions as $notification) {
           $webPush->sendNotification($notification['subscription'], $notification['payload']);
         }
-        foreach ($webPush->flush(1000) as $key => $report) {
+        foreach ($webPush->flush() as $key => $report) {
           $endpoint = $report->getRequest()->getUri()->__toString();
           if(!empty($subscriptions[$key]['oldfcm'])){
             $response = json_decode($report->getResponse()->getBody(), true);
@@ -2604,18 +2604,18 @@ class smpush_sendpush extends smpush_controller {
       $pattern = '@http(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
     }
     if($message === false){
-      $message = get_bloginfo('url').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid='.$deviceID;
+      $message = get_bloginfo('wpurl').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid='.$deviceID;
     }
     else{
       $message = preg_replace_callback($pattern, function($m) use($htmlEnabled, $devicetype, $method) {
         if($htmlEnabled){
-          //return '<a href="'.get_bloginfo('url').'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
-          return '<a href="'.get_bloginfo('url').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
+          //return '<a href="'.get_bloginfo('wpurl').'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
+          return '<a href="'.get_bloginfo('wpurl').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
         }
         else{
           $paramDevice = (!empty($deviceID))? '&deviceid='.$deviceID : '';
-          //return get_bloginfo('url').'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
-          return get_bloginfo('url').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
+          //return get_bloginfo('wpurl').'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
+          return get_bloginfo('wpurl').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
         }
       }, $message);
     }
@@ -2750,20 +2750,31 @@ class smpush_sendpush extends smpush_controller {
   }
 
   protected static function getWebPushPayload($message, $device_type) {
-    $siteurl = get_bloginfo('url');
-    $messagePayload['title'] = self::cleanString(self::$apisetting['desktop_title'], true);
+    $siteurl = get_bloginfo('wpurl');
+    $messagePayload['title'] = self::cleanString(self::$sendoptions['desktop_title'], true);
     $messagePayload['body'] = html_entity_decode(preg_replace("/U\+([0-9A-F]{4,5})/i", "&#x\\1;", self::cleanString($message)), ENT_NOQUOTES, 'UTF-8');
     $messagePayload['tag'] = $siteurl.'/'.self::$apisetting['push_basename'].'/get_link/?id='.self::$sendoptions['msgid'].'&platform='.$device_type;
-    $messagePayload['icon'] = (!empty(self::$sendoptions['desktop_icon']))? self::cleanString(urldecode(self::$sendoptions['desktop_icon'])) : self::cleanString(self::$apisetting['desktop_icon']);
+    $messagePayload['icon'] = (!empty(self::$sendoptions['desktop_icon']))? self::cleanString(urldecode(self::$sendoptions['desktop_icon'])) : self::cleanString(self::$sendoptions['desktop_icon']);
     if(!empty(self::$sendoptions['desktop_actions'])){
+      if(self::$apisetting['webpush_onesignal_payload'] == 1){
+        $messagePayload['o'] = array();
+        foreach(self::$sendoptions['desktop_actions']['id'] as $ackey => $action){
+          //$messagePayload['actions'][$ackey]['action'] = htmlspecialchars_decode(self::$sendoptions['desktop_actions']['id'][$ackey]);
+          $messagePayload['o'][$ackey]['i'] = 'button_' . $ackey;
+          $messagePayload['o'][$ackey]['n'] = self::cleanString(self::$sendoptions['desktop_actions']['text'][$ackey]);
+          $messagePayload['o'][$ackey]['p'] = self::cleanString(urldecode(self::$sendoptions['desktop_actions']['icon'][$ackey]));
+          $desktop_link = self::cleanString(urldecode(self::$sendoptions['desktop_actions']['link'][$ackey]));
+          $messagePayload['o'][$ackey]['u'] = $siteurl . '/' . self::$apisetting['push_basename'] . '/go/?id=' . self::$sendoptions['msgid'] . '&platform=' . $device_type . '&target=' . urlencode($desktop_link);
+        }
+      }
       $messagePayload['actions'] = array();
       foreach(self::$sendoptions['desktop_actions']['id'] as $ackey => $action){
         //$messagePayload['actions'][$ackey]['action'] = htmlspecialchars_decode(self::$sendoptions['desktop_actions']['id'][$ackey]);
-        $messagePayload['actions'][$ackey]['action'] = 'button_'.$ackey;
-        $messagePayload['actions'][$ackey]['title'] = self::cleanString(self::$apisetting['desktop_actions']['text'][$ackey]);
-        $messagePayload['actions'][$ackey]['icon'] = self::cleanString(urldecode(self::$apisetting['desktop_actions']['icon'][$ackey]));
+        $messagePayload['actions'][$ackey]['action'] = 'button_' . $ackey;
+        $messagePayload['actions'][$ackey]['title'] = self::cleanString(self::$sendoptions['desktop_actions']['text'][$ackey]);
+        $messagePayload['actions'][$ackey]['icon'] = self::cleanString(urldecode(self::$sendoptions['desktop_actions']['icon'][$ackey]));
         $desktop_link = self::cleanString(urldecode(self::$sendoptions['desktop_actions']['link'][$ackey]));
-        $messagePayload['data']['actions']['button_'.$ackey] = $siteurl.'/'.self::$apisetting['push_basename'].'/go/?id='.self::$sendoptions['msgid'].'&platform='.$device_type.'&target='.urlencode($desktop_link);
+        $messagePayload['data']['actions']['button_' . $ackey] = $siteurl . '/' . self::$apisetting['push_basename'] . '/go/?id=' . self::$sendoptions['msgid'] . '&platform=' . $device_type . '&target=' . urlencode($desktop_link);
       }
     }
     if(! empty(self::$sendoptions['desktop_dir']) && self::$sendoptions['desktop_dir'] != 'auto'){
@@ -2786,6 +2797,11 @@ class smpush_sendpush extends smpush_controller {
     }
     $messagePayload['requireInteraction'] = (empty(self::$sendoptions['desktop_interaction']))? false : true;
     $messagePayload['command'] = 'fetch("'.$siteurl.'/'.self::$apisetting['push_basename'].'/views_tracker/?id='.self::$sendoptions['msgid'].'&platform='.$device_type.'");';
+    if(self::$apisetting['webpush_onesignal_payload'] == 1){
+      $messagePayload['custom']['i'] = '08474f98-236b-40cd-a367-242a24962896';
+      $messagePayload['custom']['u'] = $messagePayload['tag'];
+      $messagePayload['alert'] = $messagePayload['body'];
+    }
     return json_encode($messagePayload);
   }
 

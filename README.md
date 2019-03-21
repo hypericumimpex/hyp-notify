@@ -1,2 +1,0 @@
-# hyp-notify
-Hypericum Notifications

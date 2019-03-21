@@ -103,9 +103,7 @@
         ?>
         <div class="smpushlinebetween">
           <input value="<?php echo $i;?>" type="hidden" class="actionsLoop" />
-          <!--
           <input name="desktop_actions[id][<?php echo $i;?>]" value="<?php echo $desktop_actions['id'][$i];?>" onkeyup="smpushremoveNonAlpha(this)"  onchange="smpushremoveNonAlpha(this)" type="text" size="8" placeholder="<?php echo __('Action ID', 'smpush-plugin-lang')?>">
-          -->
           <input name="desktop_actions[text][<?php echo $i;?>]" value="<?php echo $desktop_actions['text'][$i];?>" type="text" size="15" placeholder="<?php echo __('Button Text', 'smpush-plugin-lang')?>">
           <input class="smpush_upload_field_action<?php echo $i;?>" name="desktop_actions[icon][<?php echo $i;?>]" value="<?php echo $desktop_actions['icon'][$i];?>" type="url" size="25" placeholder="<?php echo __('Icon URL', 'smpush-plugin-lang')?>">
           <input class="smpush_upload_file_btn button action" data-container="smpush_upload_field_action<?php echo $i;?>" type="button" value="<?php echo __('Select File', 'smpush-plugin-lang')?>" />

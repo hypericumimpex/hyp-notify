@@ -52,7 +52,7 @@ var smpushCheckRemotePermission = function (permissionData) {
   var pushButton = jQuery(".smpush-push-permission-button");
   if (permissionData.permission === "default") {
     window.safari.pushNotification.requestPermission(
-        "'.get_bloginfo('url') .'/'.self::$apisetting['push_basename'].'/safari",
+        "'.rtrim(get_bloginfo('wpurl'), '/') .'/'.self::$apisetting['push_basename'].'/safari",
         "'.self::$apisetting['safari_web_id'].'",
         {},
         smpushCheckRemotePermission
@@ -141,7 +141,6 @@ var smpushCheckRemotePermission = function (permissionData) {
     endswitch;
     
     return '
-(function(global,factory){typeof exports==="object"&&typeof module!=="undefined"?module.exports=factory(global):typeof define==="function"&&define.amd?define(factory):factory(global)})(typeof self!=="undefined"?self:typeof window!=="undefined"?window:typeof global!=="undefined"?global:this,function(global){"use strict";var _smpushBase64=global.smpushBase64;var version="2.5.0";var buffer;if(typeof module!=="undefined"&&module.exports){try{buffer=eval("require(\'buffer\').Buffer")}catch(err){buffer=undefined}}var b64chars="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";var b64tab=function(bin){var t={};for(var i=0,l=bin.length;i<l;i++)t[bin.charAt(i)]=i;return t}(b64chars);var fromCharCode=String.fromCharCode;var cb_utob=function(c){if(c.length<2){var cc=c.charCodeAt(0);return cc<128?c:cc<2048?fromCharCode(192|cc>>>6)+fromCharCode(128|cc&63):fromCharCode(224|cc>>>12&15)+fromCharCode(128|cc>>>6&63)+fromCharCode(128|cc&63)}else{var cc=65536+(c.charCodeAt(0)-55296)*1024+(c.charCodeAt(1)-56320);return fromCharCode(240|cc>>>18&7)+fromCharCode(128|cc>>>12&63)+fromCharCode(128|cc>>>6&63)+fromCharCode(128|cc&63)}};var re_utob=/[\uD800-\uDBFF][\uDC00-\uDFFFF]|[^\x00-\x7F]/g;var utob=function(u){return u.replace(re_utob,cb_utob)};var cb_encode=function(ccc){var padlen=[0,2,1][ccc.length%3],ord=ccc.charCodeAt(0)<<16|(ccc.length>1?ccc.charCodeAt(1):0)<<8|(ccc.length>2?ccc.charCodeAt(2):0),chars=[b64chars.charAt(ord>>>18),b64chars.charAt(ord>>>12&63),padlen>=2?"=":b64chars.charAt(ord>>>6&63),padlen>=1?"=":b64chars.charAt(ord&63)];return chars.join("")};var btoa=global.btoa?function(b){return global.btoa(b)}:function(b){return b.replace(/[\s\S]{1,3}/g,cb_encode)};var _encode=buffer?buffer.from&&Uint8Array&&buffer.from!==Uint8Array.from?function(u){return(u.constructor===buffer.constructor?u:buffer.from(u)).toString("base64")}:function(u){return(u.constructor===buffer.constructor?u:new buffer(u)).toString("base64")}:function(u){return btoa(utob(u))};var encode=function(u,urisafe){return!urisafe?_encode(String(u)):_encode(String(u)).replace(/[+\/]/g,function(m0){return m0=="+"?"-":"_"}).replace(/=/g,"")};var encodeURI=function(u){return encode(u,true)};var re_btou=new RegExp(["[À-ß][-¿]","[à-ï][-¿]{2}","[ð-÷][-¿]{3}"].join("|"),"g");var cb_btou=function(cccc){switch(cccc.length){case 4:var cp=(7&cccc.charCodeAt(0))<<18|(63&cccc.charCodeAt(1))<<12|(63&cccc.charCodeAt(2))<<6|63&cccc.charCodeAt(3),offset=cp-65536;return fromCharCode((offset>>>10)+55296)+fromCharCode((offset&1023)+56320);case 3:return fromCharCode((15&cccc.charCodeAt(0))<<12|(63&cccc.charCodeAt(1))<<6|63&cccc.charCodeAt(2));default:return fromCharCode((31&cccc.charCodeAt(0))<<6|63&cccc.charCodeAt(1))}};var btou=function(b){return b.replace(re_btou,cb_btou)};var cb_decode=function(cccc){var len=cccc.length,padlen=len%4,n=(len>0?b64tab[cccc.charAt(0)]<<18:0)|(len>1?b64tab[cccc.charAt(1)]<<12:0)|(len>2?b64tab[cccc.charAt(2)]<<6:0)|(len>3?b64tab[cccc.charAt(3)]:0),chars=[fromCharCode(n>>>16),fromCharCode(n>>>8&255),fromCharCode(n&255)];chars.length-=[0,0,2,1][padlen];return chars.join("")};var atob=global.atob?function(a){return global.atob(a)}:function(a){return a.replace(/[\s\S]{1,4}/g,cb_decode)};var _decode=buffer?buffer.from&&Uint8Array&&buffer.from!==Uint8Array.from?function(a){return(a.constructor===buffer.constructor?a:buffer.from(a,"base64")).toString()}:function(a){return(a.constructor===buffer.constructor?a:new buffer(a,"base64")).toString()}:function(a){return btou(atob(a))};var decode=function(a){return _decode(String(a).replace(/[-_]/g,function(m0){return m0=="-"?"+":"/"}).replace(/[^A-Za-z0-9\+\/]/g,""))};var noConflict=function(){var smpushBase64=global.smpushBase64;global.smpushBase64=_smpushBase64;return smpushBase64};global.smpushBase64={VERSION:version,atob:atob,btoa:btoa,fromsmpushBase64:decode,tosmpushBase64:encode,utob:utob,encode:encode,encodeURI:encodeURI,btou:btou,decode:decode,noConflict:noConflict,__buffer__:buffer};if(typeof Object.defineProperty==="function"){var noEnum=function(v){return{value:v,enumerable:false,writable:true,configurable:true}};global.smpushBase64.extendString=function(){Object.defineProperty(String.prototype,"fromsmpushBase64",noEnum(function(){return decode(this)}));Object.defineProperty(String.prototype,"tosmpushBase64",noEnum(function(urisafe){return encode(this,urisafe)}));Object.defineProperty(String.prototype,"tosmpushBase64URI",noEnum(function(){return encode(this,true)}))}}if(global["Meteor"]){smpushBase64=global.smpushBase64}if(typeof module!=="undefined"&&module.exports){module.exports.smpushBase64=global.smpushBase64}else if(typeof define==="function"&&define.amd){define([],function(){return global.smpushBase64})}return{smpushBase64:global.smpushBase64}});
 
 "use strict";
 
@@ -203,7 +202,7 @@ function smpush_endpoint_subscribe(subscriptionId) {
   
   jQuery.ajax({
     method: "POST",
-    url: "'.get_bloginfo('url') .'/?smpushcontrol="+apiService,
+    url: "'.rtrim(get_bloginfo('wpurl'), '/') .'/?smpushcontrol="+apiService,
     data: data
   })
   .done(function( msg ) {
@@ -222,7 +221,7 @@ function smpush_endpoint_unsubscribe(subscriptionId) {
   jQuery("#smpushIconRequest").tooltipster("content","'.addslashes(self::$apisetting['desktop_icon_message']).'");
   jQuery.ajax({
     method: "POST",
-    url: "'.get_bloginfo('url') .'/?smpushcontrol=deletetoken",
+    url: "'.rtrim(get_bloginfo('wpurl'), '/') .'/?smpushcontrol=deletetoken",
     data: { device_token: subscriptionId, device_type: devicetype}
   })
   .done(function( msg ) {
@@ -563,9 +562,21 @@ function openFBpopup(url, elm){
   }
   
   private static function chrome() {
+    if(file_exists(ABSPATH.'/smart_manifest.js')){
+      $manifest_link = rtrim(get_bloginfo('wpurl'), '/').'/smart_manifest.js';
+    }
+    else{
+      $manifest_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=manifest';
+    }
+    if(file_exists(ABSPATH.'/smart_service_worker.js')){
+      $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/smart_service_worker.js';
+    }
+    else{
+      $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=service_worker';
+    }
     $output = '
 if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "0" || "'.addslashes(self::$apisetting['desktop_webpush_old']).'" == "1"){
-  document.getElementsByTagName("HEAD")[0].insertAdjacentHTML("afterbegin", "<link rel=\"manifest\" href=\"'.get_bloginfo('url') .'/?smpushprofile=manifest\">");
+  document.getElementsByTagName("HEAD")[0].insertAdjacentHTML("afterbegin", "<link rel=\"manifest\" href=\"'. $manifest_link .'\">");
 }
 
 function smpush_endpointWorkaround(endpoint){
@@ -658,7 +669,7 @@ function smpush_subscribe() {
           let subscriptionData = JSON.parse(JSON.stringify(subscription));
           let subscriptionServer = {"endpoint": subscriptionData.endpoint, "auth": subscriptionData.keys.auth, "p256dh": subscriptionData.keys.p256dh};
           smpush_debug(subscriptionServer);
-          return smpush_sendSubscriptionToServer(smpushBase64.encode(JSON.stringify(subscriptionServer)));
+          return smpush_sendSubscriptionToServer(btoa(JSON.stringify(subscriptionServer)));
         }
         else{
           return smpush_sendSubscriptionToServer(subscription);
@@ -722,10 +733,10 @@ function smpush_initialiseState() {
 function smpushGeko(){
   if ("serviceWorker" in navigator) {
     if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "1" && "'.addslashes(self::$apisetting['desktop_webpush_old']).'" == "0"){
-      navigator.serviceWorker.register("'.get_bloginfo('url') .'/smart_push_sw.js").then(smpush_initialiseState).catch(function(error){ smpush_debug(error); });
+      navigator.serviceWorker.register("'.rtrim(get_bloginfo('wpurl'), '/') .'/smart_push_sw.js").then(smpush_initialiseState).catch(function(error){ smpush_debug(error); });
     }
     else{
-      navigator.serviceWorker.register("'.get_bloginfo('url') .'/?smpushprofile=service_worker&platform="+devicetype).then(smpush_initialiseState).catch(function(error){ smpush_debug(error); });
+      navigator.serviceWorker.register("'.$sw_link.'").then(smpush_initialiseState).catch(function(error){ smpush_debug(error); });
     }
   } else {
     smpush_debug("Service workers aren\'t supported in this browser.");
@@ -778,7 +789,12 @@ function smpushGeko(){
     $output = self::bootstrap($options);
     $output .= self::chrome();
     $output .= self::safari();
-    echo preg_replace('/\s+/', ' ', $output);
+    $output = preg_replace('/\s+/', ' ', $output);
+    if(! file_exists(smpush_dir.'/js/frontend_webpush.js')){
+      $helper = new smpush_helper();
+      $helper->storelocalfile(smpush_dir.'/js/frontend_webpush.js', $output);
+    }
+    echo $output;
   }
   
   private static function buildPopupLayout($second_msg=false){

@@ -443,7 +443,7 @@ if($version <= 6.2){
   $setting['desktop_welc_message'] = '';
   $setting['desktop_welc_icon'] = '';
   $setting['desktop_welc_link'] = '';
-  $setting['vip'] = 1;
+  $setting['vip'] = 0;
   update_option('smpush_options', $setting);
   $version = 6.3;
 }
@@ -868,12 +868,29 @@ if($version <= 8.3){
 }
 if($version <= 8.31){
   $version = 8.32;
-}if($version <= 8.32){
+}
+if($version <= 8.32){
   $version = 8.33;
+}
+if($version <= 8.33){
+  $setting = get_option('smpush_options');
+  $setting['webpush_onesignal_payload'] = 0;
+  update_option('smpush_options', $setting);
+  $version = 8.34;
+}
+if($version <= 8.4){
+  $version = 8.4;
+}
+if($version <= 8.4){
+  $version = 8.41;
+}
+if($version <= 8.41){
+  $version = 8.42;
 }
 
 delete_transient('smpush_update_notice');
 @unlink(smpush_cache_dir.'/settings');
+@unlink(smpush_dir.'/js/frontend_webpush.js');
 update_option('smpush_version', str_replace(',', '.', $version));
 
 function smpush_move_certs(){

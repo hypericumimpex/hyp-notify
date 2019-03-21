@@ -390,9 +390,12 @@ class smpush_events extends smpush_controller{
       $cronsetting = array();
       $cronsetting['desktop_title'] = self::$post->post_title;
       $cronsetting['desktop_link'] = (empty(self::$desktopLinkOpen))? ''  : get_permalink($postid);
-      $post_thumbnail = wp_get_attachment_image_src(get_post_thumbnail_id($postid), 'medium');
-      if(!empty($post_thumbnail)){
-        $cronsetting['desktop_icon'] = esc_url($post_thumbnail[0]);
+      $post_thumbnail = get_post_thumbnail_id($postid);
+      $post_thumbnail_big = wp_get_attachment_image_src($post_thumbnail, 'medium');
+      $post_thumbnail_small = wp_get_attachment_image_src($post_thumbnail, 'thumbnail', true);
+      if(!empty($post_thumbnail_big)){
+        $cronsetting['desktop_bigimage'] = esc_url($post_thumbnail_big[0], ['https']);
+        $cronsetting['desktop_icon'] = esc_url($post_thumbnail_small[0], ['https']);
       }
       $cronsetting['name'] = self::$post->post_title;
       $cronsetting['post_id'] = $postid;
@@ -407,7 +410,7 @@ class smpush_events extends smpush_controller{
       smpush_sendpush::SendCronPush(self::$sendToDevices, $message, $payload, self::$sendToType, $cronsetting, 0 , $channelIDs, false, $templateid);
     }
   }
-  
+
   public static function woocommerce_event($orderid){
     if(empty($_POST['post_ID']) && !is_numeric($orderid)){
       return false;
@@ -947,7 +950,7 @@ class smpush_events extends smpush_controller{
       $cronsetting = array();
       $cronsetting['name'] = 'Job Mananger Alert';
       $cronsetting['desktop_title'] = $user_info->display_name;
-      $cronsetting['desktop_link'] = get_bloginfo('url').'/job-alerts/?action=view&alert_id='.$alert_id;
+      $cronsetting['desktop_link'] = get_bloginfo('wpurl').'/job-alerts/?action=view&alert_id='.$alert_id;
       $cronsetting = apply_filters('smpush_events_wpjobman_settings', $cronsetting, $message, $alert_id);
       $cronsetting['post_id'] = $alert_id;
       $cronsetting['email_wp_users'] = self::$emailWPUsers;

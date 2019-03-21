@@ -206,7 +206,7 @@ class smpush_modules extends smpush_controller {
       $template = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."push_newsletter_templates WHERE id='$_GET[template]'");
       if($template->static == 1){
         $templateContents = file_get_contents(smpush_dir.'/newsletter/'.$template->template.'.json');
-        $templateContents = str_replace('{SITEDOMAIN}', get_bloginfo('url'), $templateContents);
+        $templateContents = str_replace('{SITEDOMAIN}', get_bloginfo('wpurl'), $templateContents);
         $templateContents = str_replace('{ASSETS_LINK}', (plugins_url().'/smio-push-notification/newsletter/images'), $templateContents);
         echo $templateContents;
       }
@@ -699,6 +699,182 @@ class smpush_modules extends smpush_controller {
     }
     else {
       include(smpush_dir.'/pages/tokens_import.php');
+    }
+  }
+
+  public static function onesignal() {
+    global $wpdb;
+    self::load_jsplugins();
+    $pageurl = admin_url().'admin.php?page=smpush_onesignal';
+    if (isset($_POST['appid'])) {
+      $helper = new smpush_helper();
+      $params = [];
+      $headers = array('Authorization: Basic '.$_POST['seckey'], 'Content-Type: application/json');
+      $params = "{\n    \"extra_fields\": [\"location\", \"rooted\", \"ip\", \"country\", \"web_auth\", \"web_p256\", \"external_user_id\", \"notification_types\"], \"last_active_since\": \"1469392779\"\n}";
+      $response = $helper->buildCurl('https://onesignal.com/api/v1/players/csv_export?app_id='.$_POST['appid'], false, $params, $headers);
+      if($helper->curl_status == 200){
+        $csvinfo = json_decode($response, true);
+        if(! empty($csvinfo['csv_file_url'])){
+          echo '<br><br>CSV Link:<br><p><input value="'.$csvinfo['csv_file_url'].'" onfocus="jQuery(this).select()" type="text" size="100"></p>';
+        }
+        else{
+          echo 'Error! '.$response;
+        }
+      }
+      else{
+        echo 'Error! please ensure that you entered the correct App ID and Secret Key<br>'.$response;
+      }
+    }
+    elseif (isset($_POST['csvlink'])) {
+      @set_time_limit(0);
+
+      $helper = new smpush_helper();
+      $csv_gz_contents = $helper->buildCurl($_POST['csvlink']);
+      if($helper->curl_status == 200){
+        $upload_dir = wp_upload_dir();
+        $csv_gz_file = $upload_dir['basedir'].'/onesignal_csv.gz';
+
+        $csv_gz_handler = fopen($csv_gz_file, 'w+');
+        fwrite($csv_gz_handler, $csv_gz_contents);
+        fclose($csv_gz_handler);
+
+        $csv_file = $upload_dir['basedir'].'/onesignal.csv';
+        $buffer_size = 4096; // read 4kb at a time
+
+        // Open our files (in binary mode)
+        $file = gzopen($csv_gz_file, 'rb');
+        $out_file = fopen($csv_file, 'wb');
+
+        // Keep repeating until the end of the input file
+        while (!gzeof($file)) {
+          // Read buffer-size bytes
+          // Both fwrite and gzread and binary-safe
+          fwrite($out_file, gzread($file, $buffer_size));
+        }
+        // Files are done, close files
+        fclose($out_file);
+        gzclose($file);
+        @unlink($csv_gz_file);
+      }
+      else{
+        echo 'Error during downloading file contents !<br>';
+        echo __('Note that OneSignal takes some time to proccess your CSV file after generating your CSV link.', 'smpush-plugin-lang');
+        exit;
+      }
+
+      $sys_keys = array();
+      $sys_keys['device_token'] = 'identifier';
+      $sys_keys['platform'] = 'device_type';
+      $sys_keys['info'] = 'device_model';
+      $sys_keys['lat'] = 'lat';
+      $sys_keys['lng'] = 'lon';
+      $sys_keys['userid'] = 'external_user_id';
+      $sys_keys['auth'] = 'web_auth';
+      $sys_keys['p256'] = 'web_p256';
+
+      $row = 1;
+      $duplications = $new = $fail = $error = 0;
+      $csv_file = realpath($csv_file);
+      $current_time = current_time('timestamp');
+      if(!file_exists($csv_file)){
+        echo __('Can not parse CSV file.', 'smpush-plugin-lang').'<br>';
+        echo __('Note that OneSignal takes some time to proccess your CSV file after generating your CSV link.', 'smpush-plugin-lang');
+        @unlink($csv_file);
+        exit;
+      }
+
+      if (($handle = fopen($csv_file, 'r')) !== FALSE) {
+        while (($data = fgetcsv($handle, 0, ',')) !== FALSE) {
+          $row++;
+          if($row == 2){
+            foreach($sys_keys as $key_name => $key_value){
+              foreach($data as $csv_key_index => $csv_key){
+                if($key_value == $csv_key){
+                  $$key_name = $csv_key_index;
+                  break;
+                }
+              }
+            }
+            continue;
+          }
+          if(empty($data[$device_token])){
+            $fail++;
+            continue;
+          }
+          $data_device_token = json_encode(array('endpoint' => $data[$device_token], 'auth' => $data[$auth], 'p256dh' => $data[$p256]));
+          $data_info = addslashes($data[$info]);
+          $data_userid = intval($data[$userid]);
+          $data_lat = (empty($data[$lat]))? '0.00000000' : $data[$lat];
+          $data_lng = (empty($data[$lng]))? '0.00000000' : $data[$lng];
+          if($data[$platform] == 3){
+            $device_type = 'wp';
+          }
+          elseif($data[$platform] == 5){
+            $device_type = 'chrome';
+          }
+          elseif($data[$platform] == 6){
+            $device_type = 'wp10';
+          }
+          elseif($data[$platform] == 7){
+            $device_type = 'safari';
+          }
+          elseif($data[$platform] == 8){
+            $device_type = 'firefox';
+          }
+          elseif($data[$platform] == 11){
+            $device_type = 'email';
+            $data_device_token = $data[$device_token];
+          }
+          else{
+            continue;
+          }
+          if(isset($_POST['no_duplicates'])){
+            $tokenid = self::$pushdb->get_var(self::parse_query("SELECT {id_name} FROM {tbname} WHERE {md5token_name}='".md5($data_device_token)."' AND {type_name}='$device_type'"));
+          }
+          else{
+            $tokenid = 0;
+          }
+          if($tokenid > 0){
+            $duplications++;
+          }
+          else{
+            self::$pushdb->query(self::parse_query("INSERT INTO {tbname} ({token_name},{md5token_name},{type_name},{info_name},{active_name},{latitude_name},{longitude_name},{gpstime_name}) VALUES ('$data_device_token','".md5($data_device_token)."','$device_type','$data_info','1','$data_lat','$data_lng','".$current_time."')"));
+            if($data_userid > 0){
+              self::$pushdb->query(self::parse_query("UPDATE {tbname} SET userid='$data_userid' WHERE id='".self::$pushdb->insert_id."'"));
+            }
+            $new++;
+          }
+        }
+        fclose($handle);
+        @unlink($csv_file);
+      }
+
+      if($new > 0){
+        $current_date = gmdate('Y-m-d', current_time('timestamp'));
+        $statid = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."push_statistics WHERE platid='$platform' AND `date`='$current_date' AND action='newdevice'");
+        if(empty($statid)){
+          $stat = array();
+          $stat['platid'] = $platform;
+          $stat['date'] = $current_date;
+          $stat['action'] = 'newdevice';
+          $stat['stat'] = $new;
+          $wpdb->insert($wpdb->prefix.'push_statistics', $stat);
+        }
+        else{
+          $wpdb->query("UPDATE ".$wpdb->prefix."push_statistics SET `stat`=`stat`+$new WHERE id='$statid'");
+        }
+      }
+
+      if(empty($error)){
+        echo __('System finished importing subscribers', 'smpush-plugin-lang').': '.$new.' '.__('new', 'smpush-plugin-lang').' . '.$duplications.' '.__('duplicated', 'smpush-plugin-lang').' . '.$fail.' '.__('fail', 'smpush-plugin-lang');
+      }
+      else{
+        echo $error;
+      }
+      exit;
+    }
+    else {
+      include(smpush_dir.'/pages/onesignal_import.php');
     }
   }
 

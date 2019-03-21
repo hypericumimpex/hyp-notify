@@ -42,6 +42,10 @@ class smpush_build_profile extends smpush_controller {
         $json = array_merge($cust_manifest, $json);
       }
     }
+    if(! file_exists(ABSPATH.'/smart_manifest.js')){
+      $helper = new smpush_helper();
+      $helper->storelocalfile(ABSPATH.'/smart_manifest.js', json_encode($json));
+    }
     echo json_encode($json);
     exit;
   }
@@ -65,7 +69,9 @@ class smpush_build_profile extends smpush_controller {
     }
     elseif(self::$apisetting['msn_widget_status'] == 1 && !empty(self::$apisetting['msn_fbpage_link'])){
       wp_enqueue_script('smpush-fb-sdk');
-      echo '<script data-cfasync="false" type="text/javascript" src="'.get_bloginfo('url') .'/?smpushprofile=messenger_widget_js&version='.SMPUSHVERSION.'"></script>';
+      wp_register_script('smpush-msn-widget', get_bloginfo('wpurl') .'/?smpushprofile=messenger_widget_js', array('jquery'), SMPUSHVERSION);
+      wp_enqueue_script('smpush-msn-widget');
+      //echo '<script data-cfasync="false" type="text/javascript" src="'.get_bloginfo('wpurl') .'/?smpushprofile=messenger_widget_js&version='.SMPUSHVERSION.'"></script>';
     }
   }
   
@@ -111,16 +117,28 @@ class smpush_build_profile extends smpush_controller {
     }
     wp_enqueue_script('smpush-tooltipster');
     wp_enqueue_style('smpush-tooltipster');
-    echo '<script type="text/javascript" src="'.get_bloginfo('url') .'/?smpushprofile=load_frontend_push_js&local='.self::$apisetting['last_change_time'].'&version='.SMPUSHVERSION.'"></script>';
+    if(file_exists(smpush_dir.'/js/frontend_webpush.js')){
+      wp_register_script('smpush-webpush-frontend', smpush_jspath.'/frontend_webpush.js', array('jquery'), SMPUSHVERSION);
+    }
+    else{
+      wp_register_script('smpush-webpush-frontend', get_bloginfo('wpurl') .'/?smpushprofile=load_frontend_push_js&local='.self::$apisetting['last_change_time'], array('jquery'), SMPUSHVERSION);
+    }
+    wp_enqueue_script('smpush-webpush-frontend');
+    //echo '<script type="text/javascript" src="'.get_bloginfo('wpurl') .'/?smpushprofile=load_frontend_push_js&local='.self::$apisetting['last_change_time'].'&version='.SMPUSHVERSION.'"></script>';
   }
 
   private static function service_worker() {
+    if(file_exists(ABSPATH.'/smart_bridge.php')){
+      $apiLink = rtrim(get_bloginfo('wpurl'), '/').'/smart_bridge.php';
+    }
+    else{
+      $apiLink = rtrim(get_bloginfo('wpurl'), '/').'/';
+    }
     header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
     header("Cache-Control: post-check=0, pre-check=0", false);
     header("Pragma: no-cache");
     header('Content-Type: application/javascript');
-echo '
-
+$sw = '
 "use strict";
 
 function getDeviceID(endpoint){
@@ -156,7 +174,7 @@ self.addEventListener("push", function(event) {
     var notificationTag = "/";
     
     event.waitUntil(self.registration.pushManager.getSubscription().then(function(o) {
-      fetch("'.get_bloginfo('url').'/?smpushcontrol=get_archive&orderby=date&order=desc&platform='.$_GET['platform'].'&time="+(new Date().getTime())+"&deviceID="+getDeviceID(o.endpoint),{headers:{"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"}}
+      fetch("'.$apiLink.'?smpushcontrol=get_archive&orderby=date&order=desc&platform="+smpush_browser()+"&time="+(new Date().getTime())+"&deviceID="+getDeviceID(o.endpoint),{headers:{"Cache-Control": "no-store, no-cache, must-revalidate, max-age=0"}}
       ).then(function(response) {
         if (response.status !== 200) {
           console.log("Looks like there was a problem. Status Code: " + response.status);
@@ -219,6 +237,10 @@ self.addEventListener("push", function(event) {
   }
 });
 
+self.addEventListener("install", event => {
+  event.waitUntil(self.skipWaiting());
+});
+
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
   if (typeof(event.action) != "undefined" && event.action != "") {
@@ -248,7 +270,30 @@ self.addEventListener("notificationclick", function (event) {
   }));
 });
 
+function smpush_browser() {
+  if (navigator.userAgent.indexOf(\' OPR/\') >= 0) {
+    return "opera";
+  }
+  if (navigator.userAgent.indexOf(\'Edge\') >= 0) {
+    return "edge";
+  }
+  if (navigator.userAgent.match(/chrome/i)) {
+    return "chrome";
+  }
+  if (navigator.userAgent.match(/SamsungBrowser/i)) {
+    return "samsung";
+  }
+  if (navigator.userAgent.match(/firefox/i)) {
+    return "firefox";
+  }
+}
+
 ';
+    if(! file_exists(ABSPATH.'/smart_service_worker.js')){
+      $helper = new smpush_helper();
+      $helper->storelocalfile(ABSPATH.'/smart_service_worker.js', $sw);
+    }
+    echo $sw;
     exit;
   }
   

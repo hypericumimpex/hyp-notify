@@ -11,7 +11,9 @@
 || #################################################################### ||
 \*======================================================================*/
 
-require('class.helper.php');
+$include_path = '.';
+
+require($include_path.'/class.helper.php');
 
 class smpush_bridge extends smpush_helper {
   private $apisetting;
@@ -19,23 +21,28 @@ class smpush_bridge extends smpush_helper {
   private $table_prefix;
   private $platforms = array('ios','iosfcm','android','wp','wp10','bb','chrome','safari','firefox','opera','edge','samsung','fbmsn','fbnotify','email');
   
-  public function __construct($method=''){
+  public function __construct($include_path){
     parent::__construct();
-    $wp_config = $this->readlocalfile('../../../wp-config.php');
+    if($include_path == '.'){
+      $wp_config = $this->readlocalfile('../../../wp-config.php');
+    }
+    else{
+      $wp_config = $this->readlocalfile('./wp-config.php');
+    }
     $wp_config = preg_replace('/(require|include_once)([^;]*);/i', '', $wp_config);
     $wp_config = str_replace(array('<?php','?>'), '', $wp_config);
     eval($wp_config);
     
-    require('lib/db/ez_sql_core.php');
-    define('CACHE_DIR', 'lib/cache');
+    require($include_path.'/lib/db/ez_sql_core.php');
+    define('CACHE_DIR', $include_path.'/lib/cache');
     
     if(function_exists ('mysqli_connect')){
-      require('lib/db/ez_sql_mysqli.php');
+      require($include_path.'/lib/db/ez_sql_mysqli.php');
       $this->wpdb = new ezSQL_mysqli();
       $this->wpdb->quick_connect(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST, '', DB_CHARSET);
     }
     else{
-      require('lib/db/ez_sql_mysql.php');
+      require($include_path.'/lib/db/ez_sql_mysql.php');
       $this->wpdb = new ezSQL_mysql();
       $this->wpdb->quick_connect(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST, DB_CHARSET);
     }
@@ -152,7 +159,12 @@ class smpush_bridge extends smpush_helper {
       $gets = $this->wpdb->get_results($sql, 'ARRAY_A');
       if(!$gets) return $this->output(0, __('No result found', 'smpush-plugin-lang'));
     }
-    $siteurl = $this->apisetting['home_url'];
+    if(file_exists(ABSPATH.'/smart_bridge.php')){
+      $siteurl = $this->apisetting['home_url'].'/smart_bridge.php';
+    }
+    else{
+      $siteurl = $this->apisetting['home_url'].'/';
+    }
     $messages = array();
     foreach ($gets as $get){
       $options = unserialize($get['options']);
@@ -185,7 +197,7 @@ class smpush_bridge extends smpush_helper {
         $message['link'] = '';
       }
       else{
-        $message['link'] = $siteurl.'/?smpushcontrol=get_link&id='.$get['id'].'&platform='.$_REQUEST['platform'];
+        $message['link'] = $siteurl.'?smpushcontrol=get_link&id='.$get['id'].'&platform='.$_REQUEST['platform'];
       }
       $message['icon'] = (!empty($options['desktop_icon']))? self::cleanString($options['desktop_icon']) : '';
       
@@ -198,7 +210,7 @@ class smpush_bridge extends smpush_helper {
           $message['actions'][$ackey]['text'] = self::cleanString($options['desktop_actions']['text'][$ackey]);
           $message['actions'][$ackey]['icon'] = self::cleanString(urldecode($options['desktop_actions']['icon'][$ackey]));
           $desktop_link = self::cleanString(urldecode($options['desktop_actions']['link'][$ackey]));
-          $message['actions'][$ackey]['link'] = $siteurl.'/?smpushcontrol=go&id='.$get['id'].'&platform='.$_REQUEST['platform'].'&target='.urlencode($desktop_link);
+          $message['actions'][$ackey]['link'] = $siteurl.'?smpushcontrol=go&id='.$get['id'].'&platform='.$_REQUEST['platform'].'&target='.urlencode($desktop_link);
         }
       }
       $message['direction'] = (empty($options['desktop_dir']))? 'auto' : $options['desktop_dir'];
@@ -359,7 +371,7 @@ class smpush_bridge extends smpush_helper {
   
 }
 
-$bridge = new smpush_bridge();
+$bridge = new smpush_bridge($include_path);
 
 $_REQUEST = array_map(array($bridge, 'SecureInputs'), $_REQUEST);
 $_POST = array_map(array($bridge, 'SecureInputs'), $_POST);

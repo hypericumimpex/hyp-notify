@@ -68,7 +68,7 @@
                       <td class="first"><label><?php echo __('API Base Name', 'smpush-plugin-lang')?></label></td>
                       <td>
                         <input name="push_basename" type="text" value="<?php echo self::$apisetting['push_basename']; ?>" class="regular-text">
-                        <p class="description"><span><code><?php echo get_bloginfo('url') ; ?>/</code><abbr>API_BASE_NAME<code>/</code></abbr></span></p>
+                        <p class="description"><span><code><?php echo get_bloginfo('wpurl') ; ?>/</code><abbr>API_BASE_NAME<code>/</code></abbr></span></p>
                       </td>
                     </tr>
                     <tr valign="top">
@@ -813,7 +813,8 @@
                     <tr valign="top">
                       <td class="first"><?php echo __('Enable Web Push', 'smpush-plugin-lang')?></td>
                       <td>
-                        <label><input name="desktop_webpush" type="checkbox" value="1" <?php if(!empty($params['envErrors'])):?>disabled<?php endif; ?> <?php if (self::$apisetting['desktop_webpush'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Send web push messages with payload will save server resources because it does not make API requests to fetch the messages from your server. [Recommended]', 'smpush-plugin-lang')?></label>
+                        <label><input name="desktop_webpush" type="checkbox" value="1" <?php if(!empty($params['envErrors'])):?>disabled<?php endif; ?> <?php if (self::$apisetting['desktop_webpush'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Send web push messages with payload will save server resources because it does not make API requests to fetch the messages from your server.', 'smpush-plugin-lang')?></label>
+                        <p class="description"><?php echo __('Recommended for VPS or dedicated servers not shared hosting', 'smpush-plugin-lang')?></p>
                         <?php if(!empty($params['envErrors'])):?>
                           <p class="description"><?php echo __('Your server is not ready yet to send web push. List of requirements:', 'smpush-plugin-lang')?></p>
                           <?php foreach($params['envErrors'] as $envError): ?>
@@ -821,7 +822,6 @@
                           <?php endforeach; endif; ?>
                       </td>
                     </tr>
-                    <?php if(self::$apisetting['desktop_webpush'] == 1): ?>
                     <tr valign="top" class="desktop_webpush_show">
                       <td class="first"><?php echo __('VAPID Public Key', 'smpush-plugin-lang')?></td>
                       <td>
@@ -834,11 +834,16 @@
                         <input type="text" name="chrome_vapid_private" value="<?php echo self::$apisetting['chrome_vapid_private']; ?>" class="regular-text" size="50" />
                       </td>
                     </tr>
-                    <?php endif; ?>
                     <tr valign="top" class="desktop_webpush_show">
                       <td class="first"><?php echo __('Desktop Push Compatibility', 'smpush-plugin-lang')?></td>
                       <td>
                         <label><input name="desktop_webpush_old" type="checkbox" value="1" <?php if (self::$apisetting['desktop_webpush_old'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable this option if you already have web push subscribers before plugin\'s version 8.0', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top" class="desktop_webpush_show">
+                      <td class="first"><?php echo __('OneSignal Compliant', 'smpush-plugin-lang')?></td>
+                      <td>
+                        <label><input name="webpush_onesignal_payload" type="checkbox" value="1" <?php if (self::$apisetting['webpush_onesignal_payload'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable this option if you import some subscribers from OneSignal.', 'smpush-plugin-lang')?></label>
                       </td>
                     </tr>
                     <tr valign="top" class="desktop_webpush_hide">
@@ -1087,7 +1092,7 @@
                     <tr valign="top">
                       <td class="first"><?php echo __('Webhook Callback URL', 'smpush-plugin-lang')?></td>
                       <td>
-                        <input type="text" value="<?php echo get_bloginfo('url').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=callback" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
+                        <input type="text" value="<?php echo get_bloginfo('wpurl').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=callback" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
                         <p class="description"><?php echo __('For how to setup Facebook Messenger', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/blog/91/how-to-setup-facebook-messenger/" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
                       </td>
                     </tr>
@@ -1100,7 +1105,7 @@
                     <tr valign="top">
                       <td class="first"><?php echo __('Login URL', 'smpush-plugin-lang')?></td>
                       <td>
-                        <input type="text" value="<?php echo get_bloginfo('url').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=login" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
+                        <input type="text" value="<?php echo get_bloginfo('wpurl').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=login" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
                       </td>
                     </tr>
                     <tr valign="top">
@@ -1274,14 +1279,14 @@
                     <tr valign="top">
                       <td class="first"><?php echo __('Canvas URL', 'smpush-plugin-lang')?></td>
                       <td>
-                        <input type="text" value="<?php echo get_bloginfo('url').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=canvas" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
+                        <input type="text" value="<?php echo get_bloginfo('wpurl').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=canvas" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
                         <p class="description"><?php echo __('For how to setup Facebook Notifications', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/blog/93/how-to-setup-facebook-notifications-application/" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
                       </td>
                     </tr>
                     <tr valign="top">
                       <td class="first"><?php echo __('Login URL', 'smpush-plugin-lang')?></td>
                       <td>
-                        <input type="text" value="<?php echo get_bloginfo('url').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=login" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
+                        <input type="text" value="<?php echo get_bloginfo('wpurl').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=login" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
                       </td>
                     </tr>
                     <tr valign="top">
@@ -1338,7 +1343,7 @@
                     <tr valign="top">
                       <td class="first"><label><?php echo __('Redirect To', 'smpush-plugin-lang')?></label></td>
                       <td>
-                        <code><?php echo get_bloginfo('url') ; ?>/</code><input name="fblogin_btn_redirect" type="text" value="<?php echo self::$apisetting['fblogin_btn_redirect']; ?>" class="regular-text">
+                        <code><?php echo get_bloginfo('wpurl') ; ?>/</code><input name="fblogin_btn_redirect" type="text" value="<?php echo self::$apisetting['fblogin_btn_redirect']; ?>" class="regular-text">
                       </td>
                     </tr>
                     <tr valign="top">
@@ -1905,13 +1910,13 @@
                   <tr valign="top">
                     <td class="first"><label><?php echo __('Terms Page Link', 'smpush-plugin-lang')?></label></td>
                     <td>
-                      <code><?php echo get_bloginfo('url') ; ?>/</code><input name="gdpr_termslink" type="text" value="<?php echo self::$apisetting['gdpr_termslink']; ?>" class="regular-text">
+                      <code><?php echo get_bloginfo('wpurl') ; ?>/</code><input name="gdpr_termslink" type="text" value="<?php echo self::$apisetting['gdpr_termslink']; ?>" class="regular-text">
                     </td>
                   </tr>
                   <tr valign="top">
                     <td class="first"><label><?php echo __('Privacy Page Link', 'smpush-plugin-lang')?></label></td>
                     <td>
-                      <code><?php echo get_bloginfo('url') ; ?>/</code><input name="gdpr_privacylink" type="text" value="<?php echo self::$apisetting['gdpr_privacylink']; ?>" class="regular-text">
+                      <code><?php echo get_bloginfo('wpurl') ; ?>/</code><input name="gdpr_privacylink" type="text" value="<?php echo self::$apisetting['gdpr_privacylink']; ?>" class="regular-text">
                     </td>
                   </tr>
                   <tr valign="top">

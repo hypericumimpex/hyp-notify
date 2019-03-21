@@ -294,7 +294,7 @@ class smpush_cronsend extends smpush_controller {
                     $cronInserCounter = 0;
                   }
                 }
-                if($cronInserCounter < 1000 && $cronInserCounter > 0){
+                if($cronInserCounter < 1000 && $cronInserCounter > 0 && !empty($cronInserSql)){
                   $wpdb->query('INSERT INTO '.$wpdb->prefix.'push_cron_queue (`token_id`,`token`,`device_type`,`sendtime`,`sendoptions`,`counter`) VALUES '.rtrim($cronInserSql, ',')).';';
                 }
               }
@@ -313,6 +313,9 @@ class smpush_cronsend extends smpush_controller {
                   foreach($extraWPEmails as $extraWPEmail){
                     $passOptions = -1;
                     if(!empty($message['options']['post_id'])){
+                      if(smpush_env == 'debug'){
+                        self::log('checking user ID '.$extraWPEmail->user_id.' email subscription');
+                      }
                       $passOptions = self::checkSubsription($extraWPEmail->user_id);
                       if($passOptions === false){
                         continue;

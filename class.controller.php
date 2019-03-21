@@ -140,7 +140,7 @@ class smpush_controller extends smpush_helper{
     $document = new smpush_documentation();
     $document = $document->build();
     $smpushexurl['auth_key'] = (self::$apisetting['complex_auth']==1)?md5(date('m/d/Y').self::$apisetting['auth_key'].date('H:i')):self::$apisetting['auth_key'];
-    $smpushexurl['push_basename'] = get_bloginfo('url') .'/'.self::$apisetting['push_basename'];
+    $smpushexurl['push_basename'] = get_bloginfo('wpurl') .'/'.self::$apisetting['push_basename'];
     include(smpush_dir.'/pages/documentation.php');
   }
 
@@ -264,6 +264,7 @@ class smpush_controller extends smpush_helper{
     'ios_msg_counter',
     'desktop_webpush',
     'desktop_webpush_old',
+    'webpush_onesignal_payload',
     'desktop_welc_redir'
     );
     
@@ -429,6 +430,7 @@ class smpush_controller extends smpush_helper{
     add_submenu_page('smpush_setting', __('Manage Connections', 'smpush-plugin-lang'), __('Manage Connections', 'smpush-plugin-lang'), 'delete_pages', 'smpush_connections', array('smpush_modules', 'connections'));
     add_submenu_page('smpush_setting', __('Manage Subscribers', 'smpush-plugin-lang'), __('Manage Subscribers', 'smpush-plugin-lang'), 'delete_pages', 'smpush_tokens', array('smpush_modules', 'tokens'));
     add_submenu_page('smpush_setting', __('Import Subscribers', 'smpush-plugin-lang'), __('Import Subscribers', 'smpush-plugin-lang'), 'delete_pages', 'smpush_import', array('smpush_modules', 'import'));
+    add_submenu_page('smpush_setting', __('OneSignal Migration', 'smpush-plugin-lang'), __('OneSignal Migration', 'smpush-plugin-lang'), 'delete_pages', 'smpush_onesignal', array('smpush_modules', 'onesignal'));
     add_submenu_page('smpush_setting', __('Push Notification Channels', 'smpush-plugin-lang'), __('Manage Channels', 'smpush-plugin-lang'), 'delete_pages', 'smpush_channel', array('smpush_modules', 'push_channel'));
     add_submenu_page('smpush_setting', __('Test Dashboard', 'smpush-plugin-lang'), __('Test Dashboard', 'smpush-plugin-lang'), 'delete_pages', 'smpush_test_sending', array('smpush_modules', 'testing'));
     add_submenu_page('smpush_setting', __('Developer Documentation', 'smpush-plugin-lang'), __('Documentation', 'smpush-plugin-lang'), 'delete_pages', 'smpush_documentation', array('smpush_controller', 'documentation'));
@@ -552,7 +554,7 @@ class smpush_controller extends smpush_helper{
   
   public static function run_silent_cron(){
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, get_bloginfo('url').'/?smpushcontrol=cron_job&time='.time());
+    curl_setopt($ch, CURLOPT_URL, get_bloginfo('wpurl').'/?smpushcontrol=cron_job&time='.time());
     curl_setopt($ch, CURLOPT_HEADER, 0);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -616,12 +618,22 @@ class smpush_controller extends smpush_helper{
   }
 
   public static function setup_bridge(){
+    @unlink(ABSPATH.'/smart_manifest.js');
+    @unlink(ABSPATH.'/smart_service_worker.js');
+    @unlink(ABSPATH.'/smart_bridge.php');
+    @unlink(smpush_dir.'/js/frontend_webpush.js');
     if(is_multisite()){
       @unlink(smpush_cache_dir.'/settings'.get_current_blog_id());
     }
     else{
       @unlink(smpush_cache_dir.'/settings');
     }
+
+    $helper = new smpush_helper();
+    $bridgeContents = $helper->readlocalfile(smpush_dir.'/bridge.php');
+    $bridgeContents = str_replace('$include_path = \'.\';', '$include_path = \''.smpush_dir.'\';', $bridgeContents);
+    $helper->storelocalfile(ABSPATH.'/smart_bridge.php', $bridgeContents);
+
     self::setup_htaccess();
   }
   
@@ -643,7 +655,12 @@ class smpush_controller extends smpush_helper{
     if(!isset(self::$apisetting['fast_bridge']) || self::$apisetting['fast_bridge'] == 1){
       $smartbridge .= "RewriteCond %{QUERY_STRING} ^smpushcontrol=(get_archive|get_link|go)(.*)$\n";
       $smartbridge .= "RewriteCond %{REQUEST_FILENAME} !-f\n";
-      $smartbridge .= "RewriteRule ^(.*)$ ".(trim(str_replace(array(realpath(ABSPATH), '\\'), array('','/'), realpath(smpush_dir)), '/'))."/bridge.php?%{QUERY_STRING} [L]\n";
+      if(file_exists(ABSPATH.'/smart_bridge.php')){
+        $smartbridge .= "RewriteRule ^(.*)$ smart_bridge.php?%{QUERY_STRING} [L]\n";
+      }
+      else{
+        $smartbridge .= "RewriteRule ^(.*)$ ".(trim(str_replace(array(realpath(ABSPATH), '\\'), array('','/'), realpath(smpush_dir)), '/'))."/bridge.php?%{QUERY_STRING} [L]\n";
+      }
     }
     $smartbridge .= "</IfModule>\n";
     $smartbridge .= "# END SMART PUSH FAST BRIDGE\n";
@@ -703,7 +720,7 @@ class smpush_controller extends smpush_helper{
       $mailer->Username = self::$apisetting['smtp_username'];
       $mailer->Password = self::$apisetting['smtp_password'];
     }
-    $mailer->SMTPDebug = 0; // enables SMTP debug information (for testing), 1 = errors and messages, 2 = messages only
+    $mailer->SMTPDebug = (smpush_env == 'debug')? 1 : 0; // enables SMTP debug information (for testing), 1 = errors and messages, 2 = messages only
   }
   
   public function start_fetch_method(){

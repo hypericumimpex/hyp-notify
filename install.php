@@ -33,7 +33,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_archive` (
   `processed` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `send_type` (`send_type`,`starttime`,`status`,`processed`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_archive_reports` (
@@ -41,7 +41,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_archive_reports` (
   `report_time` int(10) UNSIGNED NOT NULL,
   `report` text NOT NULL,
   KEY `msgid` (`msgid`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_data` (
@@ -56,7 +56,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_data` (
   PRIMARY KEY (`id`),
   KEY `sourceid` (`sourceid`,`md5link`),
   KEY `published` (`published`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_sources` (
@@ -73,7 +73,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_sources` (
   `active` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `lastupdate` (`lastupdate`,`active`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_channels` (
@@ -85,7 +85,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_channels` (
   `count` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `private` (`private`,`default`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_connection` (
@@ -127,7 +127,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_connection` (
   `active_name` char(20) NOT NULL,
   `counter` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_cron_queue` (
@@ -143,7 +143,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_cron_queue` (
   KEY `sendtime` (`sendtime`),
   KEY `device_type` (`device_type`),
   KEY `sendoptions` (`sendoptions`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_desktop_messages` (
@@ -151,7 +151,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_desktop_messages` (
   `token` char(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `type` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `timepost` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_events` (
@@ -176,7 +176,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_events` (
   `status` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `status` (`status`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_events_queue` (
@@ -188,7 +188,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_events_queue` (
   `pushtime` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `pushtime` (`pushtime`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_feedback` (
@@ -200,7 +200,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_feedback` (
   `timepost` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `msgid` (`msgid`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_history` (
@@ -210,7 +210,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_history` (
   `platform` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `timepost` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_templates` (
@@ -222,7 +222,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_templates` 
   PRIMARY KEY (`id`),
   KEY `msgid` (`msgid`),
   KEY `static` (`static`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_views` (
@@ -234,7 +234,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_views` (
   `timepost` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `msgid` (`msgid`,`deviceid`,`action`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_queue` (
@@ -246,7 +246,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_queue` (
   `feedback` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `device_type` (`device_type`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_relation` (
@@ -255,7 +255,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_relation` (
   `userid` int(11) NOT NULL,
   `connection_id` int(11) NOT NULL,
   KEY `channel_id` (`channel_id`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_statistics` (
@@ -266,7 +266,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_statistics` (
   `action` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `stat` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_subscriptions` (
@@ -281,7 +281,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_subscriptions` (
   `msn` tinyint(1) NOT NULL,
   `email` tinyint(1) NOT NULL,
   PRIMARY KEY (`userid`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."sm_push_tokens` (
@@ -304,7 +304,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."sm_push_tokens` (
   KEY `latitude` (`latitude`,`longitude`,`last_geomsg_time`),
   KEY `receive_again_at` (`receive_again_at`),
   KEY `active` (`active`)
-) ENGINE=$dbEngine DEFAULT CHARSET=utf8;";
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $wpdb->query("INSERT INTO `".$wpdb->prefix."push_channels` (`id`, `title`, `private`, `default`) VALUES (1, '".__('Main Channel', 'smpush-plugin-lang')."', 0, 1);");
@@ -419,8 +419,8 @@ $setting = array(
   'safari_passphrase' => '',
   'ios_titanium_payload' => 0,
   'android_titanium_payload' => 0,
-  'purchase_code' => '123',//do not steal so you have honor
-  'vip' => 1,//do not steal so you have honor
+  'purchase_code' => (empty($purchase_code))? '' : $purchase_code,//do not steal so you have honor
+  'vip' => 0,//do not steal so you have honor
   'wp_authed' => '0',
   'wp_cert' => '',
   'wp_pem' => '',
@@ -566,6 +566,7 @@ $setting['e_woo_aband_last_rem'] = 0;
 $setting['e_woo_aband_last_title'] = __('{customer_name} the last call !', 'smpush-plugin-lang');
 $setting['e_woo_aband_last_message'] = __('click here and complete now your order with this special coupon', 'smpush-plugin-lang');
 $setting['desktop_webpush'] = 0;
+$setting['webpush_onesignal_payload'] = 0;
 $setting['desktop_webpush_old'] = 0;
 $setting['chrome_vapid_public'] = '';
 $setting['chrome_vapid_private'] = '';

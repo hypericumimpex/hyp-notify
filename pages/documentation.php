@@ -25,7 +25,7 @@
         </tr>
         <tr>
             <th>Direct Base URL</th>
-            <?php $directsmapiurl = (!empty($smpushexurl['auth_key']))?get_bloginfo('url') .'/index.php?smpushcontrol=debug&auth_key='.(urlencode($smpushexurl['auth_key'])):get_bloginfo('url') .'/index.php?smpushcontrol=debug';?>
+            <?php $directsmapiurl = (!empty($smpushexurl['auth_key']))?get_bloginfo('wpurl') .'/index.php?smpushcontrol=debug&auth_key='.(urlencode($smpushexurl['auth_key'])):get_bloginfo('wpurl') .'/index.php?smpushcontrol=debug';?>
             <td class="smpush_tdhold"><a href="<?php echo $directsmapiurl;?>" target="_blank"><?php echo $directsmapiurl;?></a></td>
         </tr>
         <tr>

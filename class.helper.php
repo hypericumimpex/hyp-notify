@@ -19,7 +19,7 @@ class smpush_helper {
 
   public function __construct(){}
     
-  public function buildCurl($url, $ssl = false, $postfields = false) {
+  public function buildCurl($url, $ssl = false, $postfields = false, $headers = false) {
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 5.1) AppleWebKit/535.6 (KHTML, like Gecko) Chrome/16.0.897.0 Safari/535.6');
@@ -40,8 +40,16 @@ class smpush_helper {
       if(is_array($postfields)){
         curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
       }
+      elseif($postfields !== true){
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postfields);
+      }
     }
-    curl_setopt($ch, CURLOPT_HEADER, FALSE);
+    if($headers !== false){
+      curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    }
+    else{
+      curl_setopt($ch, CURLOPT_HEADER, FALSE);
+    }
     if(defined('WP_PROXY_HOST')){
       curl_setopt($ch, CURLOPT_PROXY, WP_PROXY_HOST);
       curl_setopt($ch, CURLOPT_PROXYPORT, WP_PROXY_PORT);
@@ -248,8 +256,8 @@ class smpush_helper {
 
   public static function processGDPRText($privacy, $terms, $statement){
     if(!empty($terms) || !empty($privacy)){
-      $terms = '<a href="'.get_bloginfo('url').'/'.$terms.'" target="_blank">${1}</a>';
-      $privacy = '<a href="'.get_bloginfo('url').'/'.$privacy.'" target="_blank">${1}</a>';
+      $terms = '<a href="'.get_bloginfo('wpurl').'/'.$terms.'" target="_blank">${1}</a>';
+      $privacy = '<a href="'.get_bloginfo('wpurl').'/'.$privacy.'" target="_blank">${1}</a>';
       $statement = preg_replace('/\#([a-zA-Z\s]+)\#/', $privacy, $statement, 1);
       $statement = preg_replace('/\#([a-zA-Z\s]+)\#/', $terms, $statement);
       return $statement;
@@ -481,10 +489,10 @@ class smpush_helper {
     $websitejson = array(
     'websiteName' => get_bloginfo('name'),
     'websitePushID' => $settings['safari_web_id'],
-    'allowedDomains' => array('http://'.parse_url(get_bloginfo('url'), PHP_URL_HOST), 'https://'.parse_url(get_bloginfo('url'), PHP_URL_HOST)),
-    'urlFormatString' => 'https://'.parse_url(get_bloginfo('url'), PHP_URL_HOST).'/%@',
+    'allowedDomains' => array('http://'.parse_url(get_bloginfo('wpurl'), PHP_URL_HOST), 'https://'.parse_url(get_bloginfo('wpurl'), PHP_URL_HOST)),
+    'urlFormatString' => 'https://'.parse_url(get_bloginfo('wpurl'), PHP_URL_HOST).'/%@',
     'authenticationToken' => md5(time()),
-    'webServiceURL' => get_bloginfo('url').'/'.$settings['push_basename'].'/safari'
+    'webServiceURL' => get_bloginfo('wpurl').'/'.$settings['push_basename'].'/safari'
     );
     $this->storelocalfile($pack_folder.'/website.json', json_encode($websitejson));
 

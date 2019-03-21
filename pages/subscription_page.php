@@ -174,7 +174,7 @@ jQuery(document).ready(function() {
     var oldtext = jQuery("#smpush_save_button").html();
     jQuery("#smpush_save_button").attr("disabled", "disabled");
     jQuery("#smpush_save_button").html("<?php echo __('Saving...', 'smpush-plugin-lang')?>");
-    jQuery.post("<?php echo get_bloginfo('url')?>/?smpushcontrol=save_subscription&noheader=1", jQuery("#smpush_subscription_form").serialize(), function( data ) {
+    jQuery.post("<?php echo get_bloginfo('wpurl')?>/?smpushcontrol=save_subscription&noheader=1", jQuery("#smpush_subscription_form").serialize(), function( data ) {
       jQuery("#smpush_save_button").removeAttr("disabled");
       jQuery("#smpush_save_button").html("<?php echo __('Saved Successfully', 'smpush-plugin-lang')?>");
       setTimeout(function(){ jQuery("#smpush_save_button").html(oldtext); }, 3000);
@@ -198,7 +198,7 @@ jQuery(document).ready(function() {
       var oldtext = jQuery("#smpush_delete_button").html();
       jQuery("#smpush_delete_button").attr("disabled", "disabled");
       jQuery("#smpush_delete_button").html("<?php echo __('Processing...', 'smpush-plugin-lang')?>");
-      jQuery.post("<?php echo get_bloginfo('url')?>/?smpushcontrol=deletetoken&noheader=1", {"source":"delete_button"}, function( data ) {
+      jQuery.post("<?php echo get_bloginfo('wpurl')?>/?smpushcontrol=deletetoken&noheader=1", {"source":"delete_button"}, function( data ) {
         jQuery("#smpush_delete_button").removeAttr("disabled");
         jQuery("#smpush_delete_button").html(oldtext);
         location.reload();

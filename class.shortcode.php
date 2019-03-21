@@ -53,7 +53,7 @@ class smpush_shortcode extends smpush_controller {
       'secret' => (!empty(self::$apisetting['fbnotify_secret']))? self::$apisetting['fbnotify_secret'] : self::$apisetting['msn_secret'],
       'cookie' => false
      ));
-    $fbloginurl = $facebook->getLoginUrl($params = array('scope' => 'public_profile,email', 'redirect_uri' => get_bloginfo('url').'/'.self::$apisetting['push_basename'].'/facebook/?action=login'));
+    $fbloginurl = $facebook->getLoginUrl($params = array('scope' => 'public_profile,email', 'redirect_uri' => get_bloginfo('wpurl').'/'.self::$apisetting['push_basename'].'/facebook/?action=login'));
     
     $width = (empty($args['width']))? self::$apisetting['fblogin_btn_width'] : $args['width'];
     $height = (empty($args['height']))? self::$apisetting['fblogin_btn_height'] : $args['height'];
@@ -61,13 +61,13 @@ class smpush_shortcode extends smpush_controller {
     $color = (empty($args['color']))? self::$apisetting['fblogin_btn_color'] : $args['color'];
     $bgcolor = (empty($args['bgcolor']))? self::$apisetting['fblogin_btn_bgcolor'] : $args['bgcolor'];
     if(! empty($args['redirect'])){
-      $redirect = get_bloginfo('url').'/'.$args['redirect'];
+      $redirect = get_bloginfo('wpurl').'/'.$args['redirect'];
     }
     elseif(! empty(self::$apisetting['fblogin_btn_redirect'])){
-      $redirect = get_bloginfo('url').'/'.self::$apisetting['fblogin_btn_redirect'];
+      $redirect = get_bloginfo('wpurl').'/'.self::$apisetting['fblogin_btn_redirect'];
     }
     else{
-      $redirect = get_bloginfo('url');
+      $redirect = get_bloginfo('wpurl');
     }
     $icon = self::$apisetting['fblogin_btn_icon'];
 
@@ -170,7 +170,7 @@ jQuery(document).ready(function(){var t={delay:125,overlay:jQuery(".smpush-btn-f
 
   public static function woo_waiting_notifier($availability_text){
     wp_localize_script('smpush-frontend', 'smpush_jslang', array(
-      'siteurl' => get_bloginfo('url'),
+      'siteurl' => get_bloginfo('wpurl'),
       'saving_text' => __('saving...', 'smpush-plugin-lang'),
     ));
 

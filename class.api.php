@@ -442,7 +442,7 @@ class smpush_api extends smpush_controller{
         $fburl = 'https://graph.facebook.com/v2.10/oauth/access_token';
         $fburl .= '?client_id='.((empty(self::$apisetting['fbnotify_appid']))? self::$apisetting['msn_appid'] : self::$apisetting['fbnotify_appid']);
         $fburl .= '&client_secret='.((empty(self::$apisetting['fbnotify_secret']))? self::$apisetting['msn_accesstoken'] : self::$apisetting['fbnotify_secret']);
-        $fburl .= '&redirect_uri='.get_bloginfo('url').'/'.self::$apisetting['push_basename'].'/facebook/?action=login';
+        $fburl .= '&redirect_uri='.get_bloginfo('wpurl').'/'.self::$apisetting['push_basename'].'/facebook/?action=login';
         $fburl .= '&code='.$_REQUEST['code'];
         $data = json_decode($this->buildCurl($fburl), true);
         if(!empty($data['access_token'])){
@@ -533,7 +533,7 @@ class smpush_api extends smpush_controller{
       'cookie' => false
      ));
 
-    $fbloginurl = $facebook->getLoginUrl($params = array('scope' => 'public_profile,email', 'redirect_uri' => get_bloginfo('url').'/'.self::$apisetting['push_basename'].'/facebook/?action=login'));
+    $fbloginurl = $facebook->getLoginUrl($params = array('scope' => 'public_profile,email', 'redirect_uri' => get_bloginfo('wpurl').'/'.self::$apisetting['push_basename'].'/facebook/?action=login'));
     echo '<button type="button" class="fbloginbtn btn btn-primary" onclick=\'openFBpopup("'.$fbloginurl.'", this)\'><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAWlJREFUSIntU79LQlEYPff10Aj19ZPQSkMcGuo/cKqpplb3XIIIbYkKkmhMszWnNseotVVqaUoqrITsoViG6GD4631NPnwNvmu+mjzb+TjfOfc7cBlAzOuLBUhhASZgGoZAyRIJkUR8LcK8vtMgwMLGGP8EbQmksMDfmAMAC4rd1jI1aYNlyATGgMpXHZlcqaNc5DV2OYZxsLkE98yIOrtL5bEeuuy4J/AGhDYWNea84LrAPmGFxzWq8vvnd6TlIuRc2ZgAyWrW8OjZNR5ePnhW+StqBxFxa3UviO6swDM7ppkdbS+j2VSQTOWxe3zVW4BkHYRk0VbU4vVGU2/9dxW1UChWdDXM64vpFjrnHkfscFXl/r1zPKYLXI/o6YJ+QD/gfwK4/oHZJMJpl1SeyZVQrTW4AkRAyQKCo5OoWmvg6fWTy7AdpEAWiIRI15u8YBQeeEte3DgXbssAmwdgM8KXFMgA7Sfi/pNvMHlsbazqbs0AAAAASUVORK5CYII=" />'
     . '&nbsp;&nbsp;'.__('Facebook Login', 'smpush-plugin-lang').'</button>';
 
@@ -660,7 +660,7 @@ class smpush_api extends smpush_controller{
       $link = urldecode(self::cleanString($message['options']['desktop_link']));
     }
     if(empty($link)){
-      $link = get_bloginfo('url');
+      $link = get_bloginfo('wpurl');
     }
     echo '<script data-cfasync="false" type="text/javascript">window.location="'.$link.'"</script>';
     exit;
@@ -720,7 +720,7 @@ class smpush_api extends smpush_controller{
     }
     $link = urldecode(self::cleanString($_REQUEST['target']));
     if(empty($link)){
-      $link = get_bloginfo('url');
+      $link = get_bloginfo('wpurl');
     }
     echo '<script data-cfasync="false" type="text/javascript">window.location="'.$link.'"</script>';
     exit;
@@ -843,7 +843,7 @@ class smpush_api extends smpush_controller{
       $gets = $wpdb->get_results($sql, 'ARRAY_A');
       if(!$gets) return $this->output(0, __('No result found', 'smpush-plugin-lang'));
     }
-    $siteurl = get_bloginfo('url');
+    $siteurl = get_bloginfo('wpurl');
     $messages = array();
     foreach ($gets as $get){
       $options = unserialize($get['options']);
