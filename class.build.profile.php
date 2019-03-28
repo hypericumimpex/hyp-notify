@@ -21,11 +21,12 @@ class smpush_build_profile extends smpush_controller {
     die();
   }
 
-  private static function manifest() {
-    header('Content-Type: application/json');
+  public static function manifest($cache_only=false) {
     $json = array();
     $json['name'] = get_bloginfo('name');
     $json['short_name'] = get_bloginfo('name');
+    $json['start_url'] = rtrim(get_bloginfo('wpurl'), '/').'/';
+    $json['display'] = 'standalone';
     $json['icons'][0] = array(
     'src' => self::$apisetting['desktop_deficon'],
     'sizes' => '192x192',
@@ -46,8 +47,11 @@ class smpush_build_profile extends smpush_controller {
       $helper = new smpush_helper();
       $helper->storelocalfile(ABSPATH.'/smart_manifest.js', json_encode($json));
     }
-    echo json_encode($json);
-    exit;
+    if($cache_only === false){
+      header('Content-Type: application/json');
+      echo json_encode($json);
+      exit;
+    }
   }
   
   private static function load_frontend_push_js() {
@@ -69,9 +73,8 @@ class smpush_build_profile extends smpush_controller {
     }
     elseif(self::$apisetting['msn_widget_status'] == 1 && !empty(self::$apisetting['msn_fbpage_link'])){
       wp_enqueue_script('smpush-fb-sdk');
-      wp_register_script('smpush-msn-widget', get_bloginfo('wpurl') .'/?smpushprofile=messenger_widget_js', array('jquery'), SMPUSHVERSION);
+      wp_register_script('smpush-msn-widget', get_bloginfo('wpurl') .'/?smpushprofile=messenger_widget_js', array('jquery'), self::$apisetting['settings_version']);
       wp_enqueue_script('smpush-msn-widget');
-      //echo '<script data-cfasync="false" type="text/javascript" src="'.get_bloginfo('wpurl') .'/?smpushprofile=messenger_widget_js&version='.SMPUSHVERSION.'"></script>';
     }
   }
   
@@ -118,26 +121,21 @@ class smpush_build_profile extends smpush_controller {
     wp_enqueue_script('smpush-tooltipster');
     wp_enqueue_style('smpush-tooltipster');
     if(file_exists(smpush_dir.'/js/frontend_webpush.js')){
-      wp_register_script('smpush-webpush-frontend', smpush_jspath.'/frontend_webpush.js', array('jquery'), SMPUSHVERSION);
+      wp_register_script('smpush-webpush-frontend', smpush_jspath.'/frontend_webpush.js', array('jquery'), self::$apisetting['settings_version'], true);
     }
     else{
       wp_register_script('smpush-webpush-frontend', get_bloginfo('wpurl') .'/?smpushprofile=load_frontend_push_js&local='.self::$apisetting['last_change_time'], array('jquery'), SMPUSHVERSION);
     }
     wp_enqueue_script('smpush-webpush-frontend');
-    //echo '<script type="text/javascript" src="'.get_bloginfo('wpurl') .'/?smpushprofile=load_frontend_push_js&local='.self::$apisetting['last_change_time'].'&version='.SMPUSHVERSION.'"></script>';
   }
 
-  private static function service_worker() {
+  public static function service_worker($cache_only=false) {
     if(file_exists(ABSPATH.'/smart_bridge.php')){
       $apiLink = rtrim(get_bloginfo('wpurl'), '/').'/smart_bridge.php';
     }
     else{
       $apiLink = rtrim(get_bloginfo('wpurl'), '/').'/';
     }
-    header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-    header("Cache-Control: post-check=0, pre-check=0", false);
-    header("Pragma: no-cache");
-    header('Content-Type: application/javascript');
 $sw = '
 "use strict";
 
@@ -189,6 +187,7 @@ self.addEventListener("push", function(event) {
             tag: (json["result"][i]["link"] == "")? notificationTag : json["result"][i]["link"],
             icon: (json["result"][i]["icon"] == "")? icon : json["result"][i]["icon"],
             dir: json["result"][i]["direction"],
+            renotify: json["result"][i]["renotify"],
             data: [],
             actions: []
           };
@@ -211,6 +210,9 @@ self.addEventListener("push", function(event) {
           }
           if(json["result"][i]["badge"] != ""){
             notificationcontent["badge"] = json["result"][i]["badge"];
+          }
+          if(json["result"][i]["target"] != ""){
+            notificationcontent["data"]["target"] = json["result"][i]["target"];
           }
           if(json["result"][i]["vibrate"].length > 0){
             notificationcontent["vibrate"] = json["result"][i]["vibrate"];
@@ -258,14 +260,21 @@ self.addEventListener("notificationclick", function (event) {
   event.waitUntil(clients.matchAll({
     type: "window"
   }).then(function (clientList) {
+    let targetLink = "";
+    if(event.notification.data.target && event.notification.data.target != ""){
+      targetLink = event.notification.data.target;
+    }
+    else if(event.notification.tag != ""){
+      targetLink = event.notification.tag;
+    }
     for (var i = 0; i < clientList.length; i++) {
       var client = clientList[i];
-      if (client.url === event.notification.tag && "focus" in client) {
+      if (client.url === targetLink && "focus" in client) {
         return client.focus();
       }
     }
     if (clients.openWindow) {
-      return clients.openWindow(event.notification.tag);
+      return clients.openWindow(targetLink);
     }
   }));
 });
@@ -293,8 +302,11 @@ function smpush_browser() {
       $helper = new smpush_helper();
       $helper->storelocalfile(ABSPATH.'/smart_service_worker.js', $sw);
     }
-    echo $sw;
-    exit;
+    if($cache_only === false){
+      header('Content-Type: application/javascript');
+      echo $sw;
+      exit;
+    }
   }
   
 }

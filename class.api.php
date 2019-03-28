@@ -875,10 +875,17 @@ class smpush_api extends smpush_controller{
       if(empty($_REQUEST['platform']) && (empty($_REQUEST['mainPlatforms']) || $_REQUEST['mainPlatforms'] != 'web')){
         $message['link'] = '';
       }
+      elseif(self::$apisetting['no_disturb'] == 1){
+        $message['link'] = $siteurl;
+        $message['target'] = $siteurl.'/'.self::$apisetting['push_basename'].'/get_link/?id='.$get['id'].'&platform='.$_REQUEST['platform'];
+      }
       else{
         $message['link'] = $siteurl.'/'.self::$apisetting['push_basename'].'/get_link/?id='.$get['id'].'&platform='.$_REQUEST['platform'];
+        $message['target'] = '';
       }
       $message['icon'] = (!empty($options['desktop_icon']))? self::cleanString($options['desktop_icon']) : '';
+
+      $message['renotify'] = (self::$apisetting['no_disturb'] == 1)? true : false;
 
       $message['actions'] = array();
       if(!empty($options['desktop_actions'])){

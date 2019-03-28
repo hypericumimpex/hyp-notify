@@ -196,10 +196,17 @@ class smpush_bridge extends smpush_helper {
       if(empty($_REQUEST['platform']) && (empty($_REQUEST['mainPlatforms']) || $_REQUEST['mainPlatforms'] != 'web')){
         $message['link'] = '';
       }
+      elseif($this->apisetting['no_disturb'] == 1){
+        $message['link'] = $this->apisetting['home_url'];
+        $message['target'] = $siteurl.'?smpushcontrol=get_link&id='.$get['id'].'&platform='.$_REQUEST['platform'];
+      }
       else{
         $message['link'] = $siteurl.'?smpushcontrol=get_link&id='.$get['id'].'&platform='.$_REQUEST['platform'];
+        $message['target'] = '';
       }
       $message['icon'] = (!empty($options['desktop_icon']))? self::cleanString($options['desktop_icon']) : '';
+
+      $message['renotify'] = ($this->apisetting['no_disturb'] == 1)? true : false;
       
       $message['actions'] = array();
       if(!empty($options['desktop_actions'])){

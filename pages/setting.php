@@ -2,6 +2,8 @@
   <div id="smpush-icon-devsetting" class="icon32"><br></div>
   <h2><?php echo __('Smart Notification Settings', 'smpush-plugin-lang')?></h2>
 
+  <p class="description" style="color:red;text-align: right"><?php echo __('Notice: Please reset your cache plugin and purge all cache after changing any options. still face problems please check our', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/product/push-notification-system/documentation#faq" target="_blank"><?php echo __('FAQ', 'smpush-plugin-lang')?></a></p>
+
   <div id="col-container" class="smpush-settings-page">
     <form action="<?php echo $page_url; ?>" method="post" id="smpush_jform" class="validate">
       
@@ -863,6 +865,12 @@
                       <td>
                         <input type="number" name="chrome_projectid" value="<?php echo self::$apisetting['chrome_projectid']; ?>" class="regular-text" placeholder="<?php echo __('e.g. 590173865545', 'smpush-plugin-lang')?>" size="30" />
                         <p class="description"><?php echo __('For how to get API key and project number', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/blog/61/get-api-key-sender-id-fcm-push-notification-firebase/" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><?php echo __('No Disturb', 'smpush-plugin-lang')?></td>
+                      <td>
+                        <label><input name="no_disturb" type="checkbox" value="1" <?php if (self::$apisetting['no_disturb'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Always show last notification only and cancel previous one', 'smpush-plugin-lang')?></label>
                       </td>
                     </tr>
                     <tr valign="top" class="desktop_webpush_hide">

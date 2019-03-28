@@ -265,6 +265,7 @@ class smpush_controller extends smpush_helper{
     'desktop_webpush',
     'desktop_webpush_old',
     'webpush_onesignal_payload',
+    'no_disturb',
     'desktop_welc_redir'
     );
     
@@ -354,7 +355,7 @@ class smpush_controller extends smpush_helper{
       self::$apisetting['chrome_vapid_private'] = $vapkeys['privateKey'];
     }
     
-    if(self::$apisetting['msn_accesstoken'] != self::$apisetting['msn_oldaccesstoken']){
+    /*if(self::$apisetting['msn_accesstoken'] != self::$apisetting['msn_oldaccesstoken']){
       $helper = new smpush_helper();
       $response = json_decode($helper->buildCurl('https://graph.facebook.com/v2.10/me/subscribed_apps?access_token='.self::$apisetting['msn_accesstoken'], false, true), true);
       if(isset($response['success']) && $response['success'] == 'true'){
@@ -364,9 +365,11 @@ class smpush_controller extends smpush_helper{
       else{
         self::$apisetting['msn_subscribe_error'] = 1;
       }
-    }
+    }*/
+    self::$apisetting['msn_subscribe_error'] = 0;
     self::$apisetting['last_change_time'] = time();
-    
+    self::$apisetting['settings_version'] = self::$apisetting['settings_version']+0.01;
+
     self::setup_bridge();
     @unlink(smpush_cache_dir.'/jwt_header');
     
@@ -635,8 +638,18 @@ class smpush_controller extends smpush_helper{
     $helper->storelocalfile(ABSPATH.'/smart_bridge.php', $bridgeContents);
 
     self::setup_htaccess();
+    self::generateCaches();
   }
   
+  public static function generateCaches(){
+    if(self::$apisetting['desktop_status'] == 1){
+      if(self::$apisetting['desktop_webpush'] == 0 || self::$apisetting['desktop_webpush_old'] == 1){
+        smpush_build_profile::manifest(true);
+        smpush_build_profile::service_worker(true);
+      }
+    }
+  }
+
   public static function setup_htaccess(){
     if(!file_exists(ABSPATH.'/.htaccess'))return;
     $helper = new smpush_helper();
@@ -670,11 +683,13 @@ class smpush_controller extends smpush_helper{
   }
   
   public function moveServiceWokrer(){
-    if(! file_exists(ABSPATH.'/smart_push_sw.js') || filesize(ABSPATH.'/smart_push_sw.js') == 0){
-      if(file_exists(smpush_dir.'/js/sw.js')){
-        $swcontents = $this->readlocalfile(smpush_dir.'/js/sw.js');
-        $this->storelocalfile(smpush_dir.'/smart_push_sw.js', $swcontents);
-        @rename(smpush_dir.'/smart_push_sw.js', ABSPATH.'/smart_push_sw.js');
+    if(self::$apisetting['desktop_webpush'] == 1){
+      if(!file_exists(ABSPATH . '/smart_push_sw.js') || filesize(ABSPATH . '/smart_push_sw.js') == 0){
+        if(file_exists(smpush_dir . '/js/sw.js')){
+          $swcontents = $this->readlocalfile(smpush_dir . '/js/sw.js');
+          $this->storelocalfile(smpush_dir . '/smart_push_sw.js', $swcontents);
+          @rename(smpush_dir . '/smart_push_sw.js', ABSPATH . '/smart_push_sw.js');
+        }
       }
     }
   }
@@ -740,7 +755,7 @@ class smpush_controller extends smpush_helper{
   }
 
   public function register_vars($vars){
-      $vars[] = 'smpushcontrol';
+    $vars[] = 'smpushcontrol';
       return $vars;
   }
 

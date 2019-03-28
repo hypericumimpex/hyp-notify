@@ -419,8 +419,8 @@ $setting = array(
   'safari_passphrase' => '',
   'ios_titanium_payload' => 0,
   'android_titanium_payload' => 0,
-  'purchase_code' => (empty($purchase_code))? '' : $purchase_code,//do not steal so you have honor
-  'vip' => 0,//do not steal so you have honor
+  'purchase_code' => '123',//do not steal so you have honor
+  'vip' => 1,//do not steal so you have honor
   'wp_authed' => '0',
   'wp_cert' => '',
   'wp_pem' => '',
@@ -570,6 +570,8 @@ $setting['webpush_onesignal_payload'] = 0;
 $setting['desktop_webpush_old'] = 0;
 $setting['chrome_vapid_public'] = '';
 $setting['chrome_vapid_private'] = '';
+$setting['settings_version'] = SMPUSHVERSION;
+$setting['no_disturb'] = 0;
 
 add_option('smpush_options', $setting);
 add_option('smpush_version', str_replace(',', '.', SMPUSHVERSION));

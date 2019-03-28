@@ -563,16 +563,16 @@ function openFBpopup(url, elm){
   
   private static function chrome() {
     if(file_exists(ABSPATH.'/smart_manifest.js')){
-      $manifest_link = rtrim(get_bloginfo('wpurl'), '/').'/smart_manifest.js';
+      $manifest_link = rtrim(get_bloginfo('wpurl'), '/').'/smart_manifest.js?version='.self::$apisetting['settings_version'];
     }
     else{
-      $manifest_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=manifest';
+      $manifest_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=manifest&version='.self::$apisetting['settings_version'];
     }
     if(file_exists(ABSPATH.'/smart_service_worker.js')){
-      $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/smart_service_worker.js';
+      $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/smart_service_worker.js?version='.self::$apisetting['settings_version'];
     }
     else{
-      $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=service_worker';
+      $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=service_worker&version='.self::$apisetting['settings_version'];
     }
     $output = '
 if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "0" || "'.addslashes(self::$apisetting['desktop_webpush_old']).'" == "1"){

@@ -2187,7 +2187,7 @@ class smpush_sendpush extends smpush_controller {
         foreach ($subscriptions as $notification) {
           $webPush->sendNotification($notification['subscription'], $notification['payload']);
         }
-        foreach ($webPush->flush() as $key => $report) {
+        foreach ($webPush->flush(100) as $key => $report) {
           $endpoint = $report->getRequest()->getUri()->__toString();
           if(!empty($subscriptions[$key]['oldfcm'])){
             $response = json_decode($report->getResponse()->getBody(), true);
@@ -2864,6 +2864,7 @@ class smpush_sendpush extends smpush_controller {
           }
           else{
             $aPayload['aditional_param']['relatedvalue'] = self::cleanString(self::$sendoptions['extravalue'], true);
+            $aPayload['relatedvalue'] = self::cleanString(self::$sendoptions['extravalue'], true);
           }
         }
         elseif (self::$apisetting['android_corona_payload'] == 1) {
@@ -2874,6 +2875,7 @@ class smpush_sendpush extends smpush_controller {
           if ($extravalue) {
             foreach ($extravalue AS $key => $value) {
               $aPayload['aditional_param'][$key] = self::cleanString($value, true);
+              $aPayload[$key] = self::cleanString($value, true);
             }
           }
         }
@@ -2887,7 +2889,7 @@ class smpush_sendpush extends smpush_controller {
       $aPayload['aps']['custom'] = json_encode(array('msgid' => self::$sendoptions['msgid']), defined('JSON_UNESCAPED_UNICODE') ? JSON_UNESCAPED_UNICODE : 0);
     }
     else{
-      $aPayload['aps']['msgid'] = self::$sendoptions['msgid'];
+      $aPayload['msgid'] = self::$sendoptions['msgid'];
     }
     return $aPayload;
   }

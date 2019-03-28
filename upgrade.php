@@ -443,7 +443,7 @@ if($version <= 6.2){
   $setting['desktop_welc_message'] = '';
   $setting['desktop_welc_icon'] = '';
   $setting['desktop_welc_link'] = '';
-  $setting['vip'] = 0;
+  $setting['vip'] = 1;
   update_option('smpush_options', $setting);
   $version = 6.3;
 }
@@ -886,6 +886,16 @@ if($version <= 8.4){
 }
 if($version <= 8.41){
   $version = 8.42;
+}
+if($version <= 8.42){
+  $setting = get_option('smpush_options');
+  $setting['settings_version'] = SMPUSHVERSION;
+  $setting['no_disturb'] = 0;
+  update_option('smpush_options', $setting);
+
+  smpush_controller::setup_bridge();
+
+  $version = 8.43;
 }
 
 delete_transient('smpush_update_notice');

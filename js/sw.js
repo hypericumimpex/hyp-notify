@@ -8,6 +8,10 @@ self.addEventListener("push", function(event) {
   }
 });
 
+self.addEventListener("install", event => {
+  event.waitUntil(self.skipWaiting());
+});
+
 self.addEventListener("notificationclick", function(event) {
   event.notification.close();
   if (typeof(event.action) != "undefined" && event.action != "") {
@@ -17,21 +21,27 @@ self.addEventListener("notificationclick", function(event) {
   if(event.notification.tag == ""){
     return;
   }
+  if(event.notification.data.target && event.notification.data.target == ""){
+    return;
+  }
   event.waitUntil(clients.matchAll({
     type: "window"
   }).then(function(clientList) {
+    let targetLink = "";
+    if(event.notification.data.target && event.notification.data.target != ""){
+      targetLink = event.notification.data.target;
+    }
+    else if(event.notification.tag != ""){
+      targetLink = event.notification.tag;
+    }
     for (let i = 0; i < clientList.length; i++) {
       let client = clientList[i];
-      if (client.url === event.notification.tag && "focus" in client) {
+      if (client.url === targetLink && "focus" in client) {
         return client.focus();
       }
     }
     if (clients.openWindow) {
-      return clients.openWindow(event.notification.tag);
+      return clients.openWindow(targetLink);
     }
   }));
-});
-
-self.addEventListener('install', event => {
-  event.waitUntil(self.skipWaiting());
 });
