@@ -21,4 +21,9 @@ jQuery(document).ready(function() {
       });
   });
 
+  if(! document.getElementsByTagName("html")[0].hasAttribute("amp")){
+    jQuery("amp-web-push").remove();
+    jQuery("amp-web-push-widget").remove();
+  }
+
 });

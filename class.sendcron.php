@@ -298,60 +298,60 @@ class smpush_cronsend extends smpush_controller {
                   $wpdb->query('INSERT INTO '.$wpdb->prefix.'push_cron_queue (`token_id`,`token`,`device_type`,`sendtime`,`sendoptions`,`counter`) VALUES '.rtrim($cronInserSql, ',')).';';
                 }
               }
-              if(!empty($message['options']['emailgroups']) || !empty($message['options']['email_wp_users'])){
-                $usergroupsql = '';
-                if(!empty($message['options']['emailgroups'])){
-                  foreach($message['options']['emailgroups'] as $user_role){
-                    $usergroupsql .= 'OR '.$wpdb->usermeta.'.meta_value LIKE \'%'.$user_role.'%\'';
-                  }
-                  $usergroupsql = 'AND ('.ltrim($usergroupsql, 'OR ').')';
-                }
-                $extraWPEmails = $wpdb->get_results("SELECT $wpdb->users.user_email,$wpdb->usermeta.user_id FROM $wpdb->users
+            }
+          }
+          if(!empty($message['options']['emailgroups']) || !empty($message['options']['email_wp_users'])){
+            $usergroupsql = '';
+            if(!empty($message['options']['emailgroups'])){
+              foreach($message['options']['emailgroups'] as $user_role){
+                $usergroupsql .= 'OR '.$wpdb->usermeta.'.meta_value LIKE \'%'.$user_role.'%\'';
+              }
+              $usergroupsql = 'AND ('.ltrim($usergroupsql, 'OR ').')';
+            }
+            $extraWPEmails = $wpdb->get_results("SELECT $wpdb->users.user_email,$wpdb->usermeta.user_id FROM $wpdb->users
                 INNER JOIN $wpdb->usermeta ON($wpdb->usermeta.user_id=$wpdb->users.ID AND $wpdb->usermeta.meta_key='".$wpdb->prefix."capabilities' $usergroupsql)
                 GROUP BY $wpdb->users.ID");
-                if(!empty($extraWPEmails)){
-                  foreach($extraWPEmails as $extraWPEmail){
-                    $passOptions = -1;
-                    if(!empty($message['options']['post_id'])){
-                      if(smpush_env == 'debug'){
-                        self::log('checking user ID '.$extraWPEmail->user_id.' email subscription');
-                      }
-                      $passOptions = self::checkSubsription($extraWPEmail->user_id);
-                      if($passOptions === false){
-                        continue;
-                      }
-                      if(!empty($message['options']['email_wp_users']) && empty($passOptions['email'])){
-                        if(smpush_env == 'debug'){
-                          self::log('user does not use subscription page for emails or is locked');
-                        }
-                        continue;
-                      }
-                      elseif(isset($passOptions['email']) && $passOptions['email'] == 0){
-                        if(smpush_env == 'debug'){
-                          self::log('platform is locked by user');
-                        }
-                        continue;
-                      }
-                    }
-                    if(isset($message['options']['subs_filter'])){
-                      if($message['options']['subs_filter'] == 'only_have' && $passOptions == -1){
-                        continue;
-                      }
-                      if($message['options']['subs_filter'] == 'not_have' && $passOptions != -1){
-                        continue;
-                      }
-                    }
-                    $crondata = array(
-                    'token' => $extraWPEmail->user_email,
-                    'device_type' => 'email',
-                    'sendtime' => $UNIXTIMENOW,
-                    'sendoptions' => $message['id']
-                    );
-                    $wpdb->insert($wpdb->prefix.'push_cron_queue', $crondata);
-                    if(!empty($extraWPEmail->user_id)){
-                      $wpdb->insert($wpdb->prefix.'push_history', array('platform' => 'email', 'userid' => $extraWPEmail->user_id, 'msgid' => $message['id'], 'timepost' => $message['starttime']));
-                    }
+            if(!empty($extraWPEmails)){
+              foreach($extraWPEmails as $extraWPEmail){
+                $passOptions = -1;
+                if(!empty($message['options']['post_id'])){
+                  if(smpush_env == 'debug'){
+                    self::log('checking user ID '.$extraWPEmail->user_id.' email subscription');
                   }
+                  $passOptions = self::checkSubsription($extraWPEmail->user_id);
+                  if($passOptions === false){
+                    continue;
+                  }
+                  if(!empty($message['options']['email_wp_users']) && empty($passOptions['email'])){
+                    if(smpush_env == 'debug'){
+                      self::log('user does not use subscription page for emails or is locked');
+                    }
+                    continue;
+                  }
+                  elseif(isset($passOptions['email']) && $passOptions['email'] == 0){
+                    if(smpush_env == 'debug'){
+                      self::log('platform is locked by user');
+                    }
+                    continue;
+                  }
+                }
+                if(isset($message['options']['subs_filter'])){
+                  if($message['options']['subs_filter'] == 'only_have' && $passOptions == -1){
+                    continue;
+                  }
+                  if($message['options']['subs_filter'] == 'not_have' && $passOptions != -1){
+                    continue;
+                  }
+                }
+                $crondata = array(
+                  'token' => $extraWPEmail->user_email,
+                  'device_type' => 'email',
+                  'sendtime' => $UNIXTIMENOW,
+                  'sendoptions' => $message['id']
+                );
+                $wpdb->insert($wpdb->prefix.'push_cron_queue', $crondata);
+                if(!empty($extraWPEmail->user_id)){
+                  $wpdb->insert($wpdb->prefix.'push_history', array('platform' => 'email', 'userid' => $extraWPEmail->user_id, 'msgid' => $message['id'], 'timepost' => $message['starttime']));
                 }
               }
             }
@@ -453,6 +453,22 @@ class smpush_cronsend extends smpush_controller {
     if(empty(self::$apisetting['purchase_code'])){
       die('Please enter your purchase code in the `Auto Update` page.');
     }
+
+    if(file_exists(smpush_dir.'/class.sendcron.php.pid') && (filemtime(smpush_dir.'/class.sendcron.php.pid')+900) < TIMENOW){
+      @unlink(smpush_dir.'/class.sendcron.php.pid');
+    }
+
+    if(function_exists('posix_kill') && function_exists('getmypid')){
+      include(smpush_dir.'/class.oneprocess.php');
+
+      $pid = new pid(smpush_dir);
+      if($pid->already_running) {
+        echo 'already process running !';
+        self::log('already process running !');
+        return false;
+      }
+    }
+
     define('processTime', microtime(true));
     register_shutdown_function(array('smpush_cronsend', 'loadedtime'));
     @set_time_limit(0);
@@ -819,13 +835,13 @@ class smpush_cronsend extends smpush_controller {
       $DelIDS = implode(',', self::$DelIDS14);
       $wpdb->query("DELETE FROM ".$wpdb->prefix."push_cron_queue WHERE id IN($DelIDS)");
       smpush_sendpush::connectPush(self::$sendoptions['message'], self::$Devices14, 'edge', self::$sendoptions, true, 0, true, self::$tempunique);
-      self::reset13();
+      self::reset14();
     }
     elseif($type == 'iosfcm'){
       $DelIDS = implode(',', self::$DelIDS15);
       $wpdb->query("DELETE FROM ".$wpdb->prefix."push_cron_queue WHERE id IN($DelIDS)");
       smpush_sendpush::connectPush(self::$sendoptions['message'], self::$Devices15, 'iosfcm', self::$sendoptions, true, 0, true, self::$tempunique);
-      self::reset13();
+      self::reset15();
     }
   }
 

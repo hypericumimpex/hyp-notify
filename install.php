@@ -230,10 +230,21 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_views` (
   `msgid` int(11) NOT NULL,
   `platid` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `deviceid` int(11) NOT NULL,
+  `device_hash` CHAR(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `action` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `timepost` timestamp NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `msgid` (`msgid`,`deviceid`,`action`)
+) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
+dbDelta($sql);
+
+$sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_notifier` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `userid` int(11) NOT NULL,
+  `tokenid` int(11) NOT NULL,
+  `object_id` int(11) NOT NULL,
+  `type` varchar(15) NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
@@ -571,7 +582,15 @@ $setting['desktop_webpush_old'] = 0;
 $setting['chrome_vapid_public'] = '';
 $setting['chrome_vapid_private'] = '';
 $setting['settings_version'] = SMPUSHVERSION;
+$setting['black_overlay'] = 1;
 $setting['no_disturb'] = 0;
+$settings['pwa_support'] = 0;
+$settings['amp_support'] = 0;
+$settings['amp_post_widget'] = 0;
+$settings['amp_page_widget'] = 0;
+$settings['amp_post_shortcode'] = 0;
+$settings['amp_page_shortcode'] = 0;
+$settings['pwa_kaludi_support'] = 0;
 
 add_option('smpush_options', $setting);
 add_option('smpush_version', str_replace(',', '.', SMPUSHVERSION));

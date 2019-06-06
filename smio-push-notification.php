@@ -4,7 +4,7 @@ Plugin Name: HYP Smart Notifications
 Plugin URI: https://github.com/hypericumimpex/hyp-notify/
 Description: Provides a complete solution to send web and mobile notification messages to platforms iOS, Android, Chrome, Safari, Firefox, Opera, Edge, Samsung Browser, Windows Phone 8, Windows 10, BlackBerry 10, FB Messenger and Newsletter.
 Author: Hypericum
-Version: 8.4.3
+Version: 8.4.6
 Author URI: https://github.com/hypericumimpex/
 */
 
@@ -14,7 +14,7 @@ define('smpush_dir', plugin_dir_path(__FILE__));
 define('smpush_imgpath', plugins_url('/images', __FILE__));
 define('smpush_csspath', plugins_url('/css', __FILE__));
 define('smpush_jspath', plugins_url('/js', __FILE__));
-define('SMPUSHVERSION', 8.43);
+define('SMPUSHVERSION', 8.46);
 define('smpush_env', 'production');//debug, production
 define('smpush_env_demo', false);
 define('smpush_mobapp_mode', false);
@@ -38,6 +38,7 @@ require(smpush_dir.'/class.build.profile.php');
 require(smpush_dir.'/class.localization.php');
 require(smpush_dir.'/class.event.manager.php');
 require(smpush_dir.'/class.shortcode.php');
+require(smpush_dir.'/class.amp.php');
 
 $upload_dir = wp_upload_dir();
 define('smpush_upload_dir', $upload_dir['basedir']);
@@ -242,6 +243,7 @@ function smpush_uninstall_code(){
     $wpdb->query("DROP TABLE `".$wpdb->prefix."push_history`");
     $wpdb->query("DROP TABLE `".$wpdb->prefix."push_newsletter_templates`");
     $wpdb->query("DROP TABLE `".$wpdb->prefix."push_newsletter_views`");
+    $wpdb->query("DROP TABLE `".$wpdb->prefix."push_notifier`");
     $wpdb->query("DROP TABLE `".$wpdb->prefix."push_subscriptions`");
     if(empty($settings) || $settings['uninstall_action'] == 'destroy'){
       delete_option('smpush_options');

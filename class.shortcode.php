@@ -21,8 +21,7 @@ class smpush_shortcode extends smpush_controller {
   
   public static function subscription($args){
     if(!is_user_logged_in()){
-      echo '<p>'.__('Please login first to customize your notifications', 'smpush-plugin-lang').' '.'<a href="'.wp_login_url().'">'.__('login now', 'smpush-plugin-lang').'</a></p>';
-      return;
+      return '<p>'.__('Please login first to customize your notifications', 'smpush-plugin-lang').' '.'<a href="'.wp_login_url().'">'.__('login now', 'smpush-plugin-lang').'</a></p>';
     }
     if(self::$apisetting['subspage_geo_status'] == 1){
       wp_enqueue_script('smpush-gmap-source');

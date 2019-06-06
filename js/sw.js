@@ -18,30 +18,20 @@ self.addEventListener("notificationclick", function(event) {
     eval(event.notification.data.actions[event.action]);
     return;
   }
-  if(event.notification.tag == ""){
-    return;
-  }
-  if(event.notification.data.target && event.notification.data.target == ""){
+  if(event.notification.data.target == ""){
     return;
   }
   event.waitUntil(clients.matchAll({
     type: "window"
   }).then(function(clientList) {
-    let targetLink = "";
-    if(event.notification.data.target && event.notification.data.target != ""){
-      targetLink = event.notification.data.target;
-    }
-    else if(event.notification.tag != ""){
-      targetLink = event.notification.tag;
-    }
     for (let i = 0; i < clientList.length; i++) {
       let client = clientList[i];
-      if (client.url === targetLink && "focus" in client) {
+      if (client.url === event.notification.data.target && "focus" in client) {
         return client.focus();
       }
     }
     if (clients.openWindow) {
-      return clients.openWindow(targetLink);
+      return clients.openWindow(event.notification.data.target);
     }
   }));
 });

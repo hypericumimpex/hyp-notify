@@ -110,6 +110,8 @@ class smpush_sendpush extends smpush_controller {
   'email_sender' => '',
   );
 
+  private static $wpurl;
+
   public function __construct() {
     parent::__construct();
     @set_time_limit(0);
@@ -1490,7 +1492,7 @@ class smpush_sendpush extends smpush_controller {
     global $wpdb;
     self::$cronSendOperation = $cronjob;
     $idsToDel = array();
-    add_action('phpmailer_init', array('smpush_controller', 'smtp_config'));
+    add_action('phpmailer_init', array('smpush_controller', 'smtp_config'), 99, 1);
     if ($cronjob === true) {
       smpush_helper::$returnValue = 'cronjob';
     }
@@ -1662,53 +1664,7 @@ class smpush_sendpush extends smpush_controller {
       self::updateStats('iossend', $sendCounter, $cronjob, $msgid);
       @fclose($fpssl);
     }
-    elseif ($device_type == 'safari' && self::$apisetting['apple_api_ver'] == 'http2') {
-      $payload = array();
-      $payload['aps']['alert'] = array(
-        'title' => self::cleanString(self::$sendoptions['desktop_title'], true),
-        'body' => $message
-      );
-      if(!empty(self::$sendoptions['ios_slide'])){
-        $payload['aps']['alert']['action'] = self::$sendoptions['ios_slide'];
-      }
-      $payload['aps']['url-args'] = array('/'.self::$apisetting['push_basename'].'/get_link/?id='.self::$sendoptions['msgid'].'&platform=safari');
-      $payload = json_encode($payload, defined('JSON_UNESCAPED_UNICODE') ? JSON_UNESCAPED_UNICODE : 0);
-      foreach ($device_token AS $key => $sDevice) {
-        $sDevice['token'] = str_replace(array(' ', '-'), '', $sDevice['token']);
-        if (isset($sDevice['id']) && $cronjob === false) {
-          $wpdb->query("DELETE FROM ".$wpdb->prefix."push_queue WHERE id='".$sDevice['queue_id']."'");
-        }
-        unset($device_token[$key]);
-        if(smpush_env == 'debug'){
-          $response = true;
-          self::log('sent to: '.$sDevice['token']);
-          self::log($payload);
-        }
-        else{
-          $response = self::connectAPNS($sDevice['token'], $payload, 'safari');
-        }
-        if($response === false){
-          if (self::$sendoptions['feedback'] == 1) {
-            $wpdb->insert($wpdb->prefix.'push_feedback', array('tokens' => $sDevice['token'], 'device_type' => 'safari_invalid', 'msgid' => $msgid));
-          }
-        }
-        elseif($response === -1){
-          self::updateStats('safarifail', 1, $cronjob, $msgid);
-        }
-        elseif($response === true){
-          //successfull message
-        }
-        else{
-          return self::jsonPrint(0, '<p class="error">'.$response.'</p>');
-        }
-        $sendCounter++;
-      }
-      self::updateStats('safarisend', $sendCounter, $cronjob, $msgid);
-      if (!empty($_GET['safari_notify'])) {
-        self::jsonPrint('safari_server_reponse', array('message' => '<p>'.__('Connection With Safari server established successfully', 'smpush-plugin-lang').'</p><p>'.__('Safari server accepts the payload and start working', 'smpush-plugin-lang').'</p>', 'all_count' => $all_count));
-      }
-    }
-    elseif ($device_type == 'safari' && self::$apisetting['apple_api_ver'] == 'ssl') {
+    elseif ($device_type == 'safari') {
       $payload = array();
       $payload['aps']['alert'] = array(
         'title' => self::cleanString(self::$sendoptions['desktop_title'], true),
@@ -2048,7 +2004,8 @@ class smpush_sendpush extends smpush_controller {
       }
       $fields = array('registration_ids' => $device_token['token'], 'data' => $data);
       if(self::$apisetting['android_fcm_msg'] == 1){
-        $fields['data'] = array_merge($fields['data'], $notification);
+        unset($fields['data']['message']);
+        $fields['notification'] = $notification;
       }
       if (self::$sendoptions['expire'] > 0) {
         $fields['time_to_live'] = self::$sendoptions['expire'] * 3600;
@@ -2187,7 +2144,7 @@ class smpush_sendpush extends smpush_controller {
         foreach ($subscriptions as $notification) {
           $webPush->sendNotification($notification['subscription'], $notification['payload']);
         }
-        foreach ($webPush->flush(100) as $key => $report) {
+        foreach ($webPush->flush(60) as $key => $report) {
           $endpoint = $report->getRequest()->getUri()->__toString();
           if(!empty($subscriptions[$key]['oldfcm'])){
             $response = json_decode($report->getResponse()->getBody(), true);
@@ -2567,7 +2524,8 @@ class smpush_sendpush extends smpush_controller {
       self::$sendoptions['email_subject'] = html_entity_decode(preg_replace("/U\+([0-9A-F]{4,5})/i", "&#x\\1;", stripslashes(self::$sendoptions['email_subject'])), ENT_QUOTES, 'UTF-8');
       foreach ($device_token AS $key => $sDevice) {
         $emailcontents = self::$sendoptions['email'];
-        $emailcontents .= '<img style="width: 0px; max-height: 0px; overflow: hidden; display: none;" src="'.self::processLinks(false, $device_type, false, 'tracking', $sDevice['id']).'" border="0">';
+        $devID = (empty($sDevice['id'])) ? base64_encode($sDevice['token']) : $sDevice['id'];
+        $emailcontents .= '<img style="width: 0px; max-height: 0px; overflow: hidden; display: none;" src="'.self::processLinks(false, $device_type, false, 'tracking', $devID).'" border="0">';
         $emailcontents = str_replace('{unsubscribe_link}', self::processLinks(false, $device_type, false, 'unsubscribe', base64_encode($sDevice['token'])), $emailcontents);
         $emailcontents = str_replace('{DEVICE_ID}', $sDevice['id'], $emailcontents);
         if(smpush_env == 'debug'){
@@ -2597,6 +2555,13 @@ class smpush_sendpush extends smpush_controller {
   }
   
   private static function processLinks($message, $devicetype, $htmlEnabled, $method='go', $deviceID=''){
+    if(empty(self::$wpurl)){
+      self::$wpurl = rtrim(get_bloginfo('wpurl'), '/').'/';
+    }
+    $wpurl = self::$wpurl;
+    if(in_array($method, ['tracking','go']) && file_exists(ABSPATH.'/smart_bridge.php')){
+      $wpurl .= 'smart_bridge.php';
+    }
     if($htmlEnabled){
       $pattern = '/<a[^>]+href=([\'"])http(?<href>.+?)\1[^>]*>/i';
     }
@@ -2604,18 +2569,18 @@ class smpush_sendpush extends smpush_controller {
       $pattern = '@http(s)?(://)?(([a-zA-Z])([-\w]+\.)+([^\s\.]+[^\s]*)+[^,.\s])@';
     }
     if($message === false){
-      $message = get_bloginfo('wpurl').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid='.$deviceID;
+      $message = $wpurl.'?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid='.$deviceID;
     }
     else{
-      $message = preg_replace_callback($pattern, function($m) use($htmlEnabled, $devicetype, $method) {
+      $message = preg_replace_callback($pattern, function($m) use($htmlEnabled, $devicetype, $method, $wpurl) {
         if($htmlEnabled){
-          //return '<a href="'.get_bloginfo('wpurl').'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
-          return '<a href="'.get_bloginfo('wpurl').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
+          //return '<a href="'.$wpurl.'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
+          return '<a href="'.$wpurl.'?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&deviceid={DEVICE_ID}&target='.urlencode('http'.$m['href']).'">';
         }
         else{
           $paramDevice = (!empty($deviceID))? '&deviceid='.$deviceID : '';
-          //return get_bloginfo('wpurl').'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
-          return get_bloginfo('wpurl').'/?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
+          //return $wpurl.'/'.self::$apisetting['push_basename'].'/'.$method.'/?id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
+          return $wpurl.'?smpushcontrol='.$method.'&id='.self::$sendoptions['msgid'].'&platform='.$devicetype.'&target='.urlencode($m[0]).$paramDevice;
         }
       }, $message);
     }
@@ -2753,7 +2718,16 @@ class smpush_sendpush extends smpush_controller {
     $siteurl = get_bloginfo('wpurl');
     $messagePayload['title'] = self::cleanString(self::$sendoptions['desktop_title'], true);
     $messagePayload['body'] = html_entity_decode(preg_replace("/U\+([0-9A-F]{4,5})/i", "&#x\\1;", self::cleanString($message)), ENT_NOQUOTES, 'UTF-8');
-    $messagePayload['tag'] = $siteurl.'/'.self::$apisetting['push_basename'].'/get_link/?id='.self::$sendoptions['msgid'].'&platform='.$device_type;
+    $target = $siteurl.'/'.self::$apisetting['push_basename'].'/get_link/?id='.self::$sendoptions['msgid'].'&platform='.$device_type;
+    if(self::$apisetting['no_disturb'] == 1){
+      $messagePayload['tag'] = $siteurl;
+    }
+    else{
+      $messagePayload['tag'] = self::$sendoptions['msgid'];
+    }
+    $messagePayload['data']['target'] = $target;
+    $messagePayload['renotify'] = (self::$apisetting['no_disturb'] == 1)? true : false;
+
     $messagePayload['icon'] = (!empty(self::$sendoptions['desktop_icon']))? self::cleanString(urldecode(self::$sendoptions['desktop_icon'])) : self::cleanString(self::$sendoptions['desktop_icon']);
     if(!empty(self::$sendoptions['desktop_actions'])){
       if(self::$apisetting['webpush_onesignal_payload'] == 1){
@@ -2799,7 +2773,7 @@ class smpush_sendpush extends smpush_controller {
     $messagePayload['command'] = 'fetch("'.$siteurl.'/'.self::$apisetting['push_basename'].'/views_tracker/?id='.self::$sendoptions['msgid'].'&platform='.$device_type.'");';
     if(self::$apisetting['webpush_onesignal_payload'] == 1){
       $messagePayload['custom']['i'] = '08474f98-236b-40cd-a367-242a24962896';
-      $messagePayload['custom']['u'] = $messagePayload['tag'];
+      $messagePayload['custom']['u'] = $target;
       $messagePayload['alert'] = $messagePayload['body'];
     }
     return json_encode($messagePayload);

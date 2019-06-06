@@ -104,7 +104,7 @@
                                   <td>
                                     <?php include('event_form_quickadd.php')?>
                                     <br class="clear">
-                                    <textarea name="email_message" rows="6" cols="40" style="width:95%" id="smpushEventMessageEmail" class="smpushEventMessage" aria-required="true"><?php echo $event['email_message'];?></textarea>
+                                    <textarea name="email_message" rows="30" cols="40" style="width:95%" id="smpushEventMessageEmail" class="smpushEventMessage" aria-required="true"><?php echo $event['email_message'];?></textarea>
                                   </td>
                                 </tr>
                             </table>

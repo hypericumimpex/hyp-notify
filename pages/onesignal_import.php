@@ -49,6 +49,8 @@
                      <td>
                        <input name="csvlink" type="link" size="60">
                        <p class="description"><code><?php echo __('Note that OneSignal takes some time to proccess your CSV file after generating your CSV link.', 'smpush-plugin-lang')?></code></p>
+                       <p class="description"><code><?php echo __('You need to get your app VAPID keys from OneSignal and update them in the plugin settings page.', 'smpush-plugin-lang')?></code></p>
+                       <p class="description"><code><?php echo __('Do not forget to enable OneSignal payload compliant option in the plugin settings page.', 'smpush-plugin-lang')?></code></p>
                      </td>
                    </tr>
                    <tr valign="top">

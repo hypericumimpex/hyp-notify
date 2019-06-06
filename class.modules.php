@@ -399,6 +399,31 @@ class smpush_modules extends smpush_controller {
         wp_die(__('An error has occurred, the system stopped and rolled back the changes.', 'smpush-plugin-lang'));
       }
     }
+    elseif (isset($_GET['remove_deads'])) {
+      $counter = 0;
+      $delIDs = [];
+      $devices = self::$pushdb->get_results(self::parse_query("SELECT {id_name} AS devid FROM {tbname} WHERE {active_name}='0'"));
+      if($devices){
+        foreach($devices as $device){
+          if($counter == 1000){
+            $delIDs = implode(',', $delIDs);
+            self::$pushdb->query(self::parse_query("DELETE FROM {tbname} WHERE {id_name} IN ($delIDs)"));
+            $wpdb->query("DELETE FROM ".$wpdb->prefix."push_relation WHERE token_id IN ($delIDs)");
+            $counter = 0;
+            $delIDs = [];
+          }
+          $counter++;
+          $delIDs[] = $device->devid;
+        }
+        if($counter < 1000 && $counter > 0){
+          $delIDs = implode(',', $delIDs);
+          self::$pushdb->query(self::parse_query("DELETE FROM {tbname} WHERE {id_name} IN ($delIDs)"));
+          $wpdb->query("DELETE FROM ".$wpdb->prefix."push_relation WHERE token_id IN ($delIDs)");
+        }
+      }
+      parent::update_counters();
+      wp_redirect($pageurl);
+    }
     elseif (isset($_GET['delete'])) {
       self::$pushdb->query(self::parse_query("DELETE FROM {tbname} WHERE {id_name}='$_GET[id]'"));
       $wpdb->query("DELETE FROM ".$wpdb->prefix."push_relation WHERE token_id='$_GET[id]' AND connection_id='".self::$apisetting['def_connection']."'");

@@ -104,11 +104,11 @@
                                      <table class="form-table">
     <tr valign="top"><td class="first"><?php echo __('From Email', 'smpush-plugin-lang')?></td>
     <td>
-      <input name="email_sender" value="<?php echo self::loadData('options', 'email_sender')?>" type="email" size="50" />
+      <input name="email_sender" value="<?php echo self::loadData('options', 'email_sender', get_bloginfo('admin_email'))?>" type="email" size="50" />
     </td></tr>
     <tr valign="top"><td class="first"><?php echo __('From Name', 'smpush-plugin-lang')?></td>
     <td>
-        <input name="email_fname" value="<?php echo self::loadData('options', 'email_fname')?>" type="text" size="30" />
+        <input name="email_fname" value="<?php echo self::loadData('options', 'email_fname', get_bloginfo('name'))?>" type="text" size="30" />
     </td></tr>
     <tr valign="top"><td class="first"><?php echo __('Email Subject', 'smpush-plugin-lang')?></td>
     <td>

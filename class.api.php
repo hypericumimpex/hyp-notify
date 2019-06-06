@@ -402,7 +402,12 @@ class smpush_api extends smpush_controller{
       $_REQUEST['device_type'] = 'fbmsn';
       $fbprofile = json_decode($this->buildCurl('https://graph.facebook.com/v2.10/'.$fbuid.'?fields=first_name,last_name&access_token='.self::$apisetting['msn_accesstoken']), true);
       if($this->curl_status == 400){
-        exit;
+        $fbprofile = json_decode($this->buildCurl('https://graph.facebook.com/v2.10/'.$fbuid.'?fields=&access_token='.self::$apisetting['msn_accesstoken']));
+        if($this->curl_status == 400){
+          $fbprofile = $this->buildCurl('https://graph.facebook.com/v2.10/'.$fbuid.'?fields=first_name,last_name&access_token='.self::$apisetting['msn_accesstoken']);
+          $this->log($fbprofile);
+          exit;
+        }
       }
       if(!empty($fbprofile['first_name']) || !empty($fbprofile['lname'])){
         $_REQUEST['device_info'] = trim($fbprofile['first_name'].' '.$fbprofile['lname']);
@@ -731,10 +736,22 @@ class smpush_api extends smpush_controller{
     $deviceID = base64_decode($_GET['deviceid']);
 
     $device = self::$pushdb->get_row(self::parse_query("SELECT {id_name} AS id,{active_name} AS status FROM {tbname} WHERE {md5token_name}='".md5($deviceID)."' AND {type_name}='{email_name}'"));
-    if($device->status == 1){
+    if(! $device){
+      global $wpdb;
+      $userid = $wpdb->get_var("SELECT id FROM $wpdb->users WHERE user_email='$deviceID'");
+      if($userid){
+        $emailStatus = $wpdb->get_var("SELECT email FROM ".$wpdb->prefix."push_subscriptions WHERE userid='$userid'");
+        if($emailStatus == 1){
+          $wpdb->query("UPDATE ".$wpdb->prefix."push_subscriptions SET email='0' WHERE userid='$userid'");
+          $this->saveStats($_GET['platform'], 'invdevice');
+        }
+      }
+    }
+    elseif($device && $device->status == 1){
       self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {active_name}='0' WHERE {id_name}='$device->id'"));
       $this->saveStats($_GET['platform'], 'invdevice');
     }
+
     echo 'successfully unsubscribed';
     exit;
   }
@@ -742,11 +759,24 @@ class smpush_api extends smpush_controller{
   public function tracking() {
     $this->CheckParams(array('id','platform','deviceid'));
     global $wpdb;
-    $viewid = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."push_newsletter_views WHERE msgid='$_GET[id]' AND deviceid='$_GET[deviceid]' AND action='view'");
+
+    if(is_numeric($_GET['deviceid'])){
+      $where = "deviceid='$_GET[deviceid]'";
+    }
+    else{
+      $where = "device_hash='".md5(base64_decode($_GET['deviceid']))."'";
+    }
+
+    $viewid = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."push_newsletter_views WHERE msgid='$_GET[id]' AND $where AND action='view'");
     if(!$viewid){
       $data = array();
       $data['msgid'] = $_GET['id'];
-      $data['deviceid'] = $_GET['deviceid'];
+      if(is_numeric($_GET['deviceid'])){
+        $data['deviceid'] = $_GET['deviceid'];
+      }
+      else{
+        $data['device_hash'] = md5(base64_decode($_GET['deviceid']));
+      }
       $data['platid'] = $_GET['platform'];
       $data['action'] = 'view';
       $wpdb->insert($wpdb->prefix.'push_newsletter_views', $data);
@@ -754,7 +784,7 @@ class smpush_api extends smpush_controller{
       $this->saveStats($_GET['platform'], 'views', $_GET['id']);
     }
     header('Content-Type: image/gif');
-    echo $this->readlocalfile(smpush_imgpath.'/unnamed.gif');
+    echo $this->readlocalfile(smpush_dir.'/images/unnamed.gif');
     exit;
   }
 
@@ -1039,6 +1069,7 @@ class smpush_api extends smpush_controller{
     $taxonomies = get_terms(array('taxonomy' => self::$apisetting['subspage_post_type_tax']), 'hide_empty=0');
     foreach ($taxonomies as $taxonomy){
       if(!in_array($taxonomy->term_id, self::$apisetting['subspage_category']))        continue;
+      $cimage = '';
       if($catimageplugin){
         $cimage = z_taxonomy_image_url($taxonomy->term_id, true);
         if($cimage !== false)

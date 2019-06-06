@@ -61,7 +61,13 @@
               <input type="text" name="userid" placeholder="User ID" value="<?php echo (!empty($_GET['userid']))?$_GET['userid']:'';?>">
               <input type="submit" id="post-query-submit" class="button" value="<?php echo __('Filter', 'smpush-plugin-lang')?>">
             </div>
-            <div class="tablenav-pages one-page"><span class="displaying-num"><?php echo self::$paging['result'];?> <?php echo __('items', 'smpush-plugin-lang')?></span></div>
+            <div class="tablenav-pages one-page">
+              <div class="alignleft" style="margin-top: 5px;margin-right: 35px">
+                <button type="button" onclick="if(confirm('<?php echo __('Are you sure you want to delete all invalid subscribers ?', 'smpush-plugin-lang')?>')) window.location = '<?php echo $pageurl;?>&remove_deads=1&noheader=1'" class="button-link button-link-delete widget-control-remove"><?php echo __('Delete invalid subscribers', 'smpush-plugin-lang')?></button>
+                <span class="widget-control-close-wrapper"></span>
+              </div>
+              <span class="displaying-num"><?php echo self::$paging['result'];?> <?php echo __('items', 'smpush-plugin-lang')?></span>
+            </div>
         	<br class="clear">
         	</div>
              <table class="wp-list-table widefat fixed tags" cellspacing="0" <?php if(get_bloginfo('version') < 3.8){?>style="table-layout: auto"<?php }?>>

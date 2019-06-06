@@ -25,7 +25,7 @@
         <input class="smpush_jradio" name="selectDIV" value="blackberry" type="radio" data-icon="<?php echo smpush_imgpath; ?>/blackberry.png" data-labelauty='<?php echo __('BlackBerry', 'smpush-plugin-lang')?>' />
       </div>
       
-      <div id="col-left" class="smpush-tabs-web smpush-tabs-desktop smpush-tabs-popup smpush-tabs-chrome smpush-tabs-firefox smpush-tabs-safari smpush-tabs-opera smpush-tabs-edge smpush-tabs-samsung smpush-tabs-welcmsg smpush-radio-tabs" style="display:none">
+      <div id="col-left" class="smpush-tabs-web smpush-tabs-desktop smpush-tabs-popup smpush-tabs-chrome smpush-tabs-firefox smpush-tabs-safari smpush-tabs-opera smpush-tabs-edge smpush-tabs-samsung smpush-tabs-amp smpush-tabs-welcmsg smpush-radio-tabs" style="display:none">
         <input class="smpush_jradio" name="selectDIV" value="desktop" type="radio" data-icon="<?php echo smpush_imgpath; ?>/desktop.png" data-labelauty='<?php echo __('General', 'smpush-plugin-lang')?>' />
         <input class="smpush_jradio" name="selectDIV" value="popup" type="radio" data-icon="<?php echo smpush_imgpath; ?>/popup.png" data-labelauty='<?php echo __('Pop-up', 'smpush-plugin-lang')?>' />
         <input class="smpush_jradio" name="selectDIV" value="chrome" type="radio" data-icon="<?php echo smpush_imgpath; ?>/chrome.png" data-labelauty='<?php echo __('Chrome', 'smpush-plugin-lang')?>' />
@@ -34,6 +34,7 @@
         <input class="smpush_jradio" name="selectDIV" value="opera" type="radio" data-icon="<?php echo smpush_imgpath; ?>/opera.png" data-labelauty='<?php echo __('Opera', 'smpush-plugin-lang')?>' />
         <input class="smpush_jradio" name="selectDIV" value="edge" type="radio" data-icon="<?php echo smpush_imgpath; ?>/edge.png" data-labelauty='<?php echo __('Edge', 'smpush-plugin-lang')?>' />
         <input class="smpush_jradio" name="selectDIV" value="samsung" type="radio" data-icon="<?php echo smpush_imgpath; ?>/samsung.png" data-labelauty='<?php echo __('Samsung', 'smpush-plugin-lang')?>' />
+        <input class="smpush_jradio" name="selectDIV" value="amp" type="radio" data-icon="<?php echo smpush_imgpath; ?>/amp.png" data-labelauty='<?php echo __('AMP', 'smpush-plugin-lang')?>' />
         <input class="smpush_jradio" name="selectDIV" value="welcmsg" type="radio" data-icon="<?php echo smpush_imgpath; ?>/welcome.png" data-labelauty='<?php echo __('Welcome', 'smpush-plugin-lang')?>' />
       </div>
       
@@ -685,6 +686,12 @@
                       </td>
                     </tr>
                     <tr valign="top">
+                      <td class="first"><?php echo __('Black Overlay', 'smpush-plugin-lang')?></td>
+                      <td>
+                        <label><input name="black_overlay" type="checkbox" value="1" <?php if (self::$apisetting['black_overlay'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Display black overlay when the popup appears.', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top">
                       <td class="first"><?php echo __('Delay Time', 'smpush-plugin-lang')?></td>
                       <td>
                         <input name="desktop_delay" type="number" value="<?php echo self::$apisetting['desktop_delay']; ?>" class="regular-text" style="width:70px"> <?php echo __('Number of seconds to delay appearing the request permissions for visitors.', 'smpush-plugin-lang')?>
@@ -1006,6 +1013,80 @@
                           <?php echo __('Samsung Browser push notification depends on Chrome configurations to work .', 'smpush-plugin-lang')?>
                         </p>
                         <?php echo __('Samsung Browser push notification requires your site working under <code>HTTPS</code> protocol .', 'smpush-plugin-lang')?>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td colspan="2">
+                          <input type="submit" name="submit" class="button button-primary" value="<?php echo __('Save All Settings', 'smpush-plugin-lang')?>">
+                          <img src="<?php echo smpush_imgpath; ?>/wpspin_light.gif" class="smpush_process" alt="" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="col-left" class="smpush-tabs-amp smpush-radio-tabs">
+        <div id="post-body" class="metabox-holder columns-2">
+          <div>
+            <div id="namediv" class="stuffbox">
+              <h3><label><img src="<?php echo smpush_imgpath; ?>/amp.png" alt="" /> <span>AMP</span></label></h3>
+              <div class="inside">
+                <table class="form-table">
+                  <tbody>
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('Enable PWA Support', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <label><input name="pwa_support" type="checkbox" value="1" <?php if (self::$apisetting['pwa_support'] == 1) { ?>checked="checked"<?php } ?>>
+                          <?php echo __('Enable PWA support for', 'smpush-plugin-lang')?> <a href="https://wordpress.org/plugins/super-progressive-web-apps/" target="_blank">SuperPWA</a> <?php echo __('plugin', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <!--<tr valign="top">
+                      <td class="first"><label><?php echo __('Enable PWA Support', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <input name="pwa_kaludi_support" type="checkbox" value="1" <?php if (self::$apisetting['pwa_kaludi_support'] == 1) { ?>checked="checked"<?php } ?>>
+                        <?php echo __('Enable PWA support for', 'smpush-plugin-lang')?> <a href="https://wordpress.org/plugins/pwa-for-wp/" target="_blank">PWA for WP</a> <?php echo __('plugin', 'smpush-plugin-lang')?>
+                      </td>
+                    </tr>-->
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('Enable AMP Support', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <input name="amp_support" type="checkbox" value="1" <?php if (self::$apisetting['amp_support'] == 1) { ?>checked="checked"<?php } ?> <?php if (self::$apisetting['desktop_webpush'] == 0) { ?>disabled="disabled"<?php } ?>>
+                        <?php if (self::$apisetting['desktop_webpush'] == 0): ?>
+                          <code><?php echo __('AMP supports VAPID web push only.', 'smpush-plugin-lang')?></code>
+                        <?php endif; ?>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('AMP Post Widget', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <label><input name="amp_post_widget" type="checkbox" value="1" <?php if (self::$apisetting['amp_post_widget'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable showing AMP opt-in buttons under post content.', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('AMP Page Widget', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <label><input name="amp_page_widget" type="checkbox" value="1" <?php if (self::$apisetting['amp_page_widget'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable showing AMP opt-in buttons under page content.', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('AMP Post Shortcode', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <label><input name="amp_post_shortcode" type="checkbox" value="1" <?php if (self::$apisetting['amp_post_shortcode'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable showing AMP opt-in shortcode buttons for posts.', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('AMP Page Shortcode', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <label><input name="amp_page_shortcode" type="checkbox" value="1" <?php if (self::$apisetting['amp_page_shortcode'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable showing AMP opt-in shortcode buttons for pages.', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('AMP Buttons Shortcode', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <label><input type="text" size="80" value="[smart_amp_optin subscribe='Subscribe to Notifications' unsubscribe='Opt-out from Notifications']" class="regular-text" onfocus="jQuery(this).select()" readonly>
                       </td>
                     </tr>
                     <tr valign="top">

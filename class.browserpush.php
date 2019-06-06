@@ -354,7 +354,9 @@ function smpushDrawNotifyPopup(){
   jQuery("body").append(\''.self::buildPopupLayout(true).'\');
   document.getElementById("smart_push_smio_overlay").style.opacity = "'.((empty(self::$apisetting['desktop_paytoread_darkness']))? 0.8:(self::$apisetting['desktop_paytoread_darkness']/10) ).'";
   document.getElementById("smart_push_smio_window").style.position = "fixed";
-  document.getElementById("smart_push_smio_overlay").style.display = "block";
+  if("'.self::$apisetting['black_overlay'].'" == "1"){
+    document.getElementById("smart_push_smio_overlay").style.display = "block";
+  }
   document.getElementById("smart_push_smio_window").style.display = "block";
 
   document.getElementById("smart_push_smio_window").style.left = ((window.innerWidth/2) - (document.getElementById("smart_push_smio_window").offsetWidth/2)) + "px";
@@ -369,7 +371,9 @@ function smpushDrawUnSupportedPopup(){
   jQuery("body").append(\''.self::buildPopupLayout(self::$apisetting['desktop_notsupport_msg']).'\');
   document.getElementById("smart_push_smio_overlay").style.opacity = "'.((empty(self::$apisetting['desktop_paytoread_darkness']))? 0.8:(self::$apisetting['desktop_paytoread_darkness']/10) ).'";
   document.getElementById("smart_push_smio_window").style.position = "fixed";
-  document.getElementById("smart_push_smio_overlay").style.display = "block";
+  if("'.self::$apisetting['black_overlay'].'" == "1"){
+    document.getElementById("smart_push_smio_overlay").style.display = "block";
+  }
   document.getElementById("smart_push_smio_window").style.display = "block";
 
   document.getElementById("smart_push_smio_window").style.left = ((window.innerWidth/2) - (document.getElementById("smart_push_smio_window").offsetWidth/2)) + "px";
@@ -384,7 +388,9 @@ function smpushIntializePopupBox(){
   jQuery("body").append(\''.self::buildPopupLayout().'\');
   document.getElementById("smart_push_smio_overlay").style.opacity = "'.((empty(self::$apisetting['desktop_paytoread_darkness']))? 0.8:(self::$apisetting['desktop_paytoread_darkness']/10) ).'";
   document.getElementById("smart_push_smio_window").style.position = "fixed";
-  document.getElementById("smart_push_smio_overlay").style.display = "block";
+  if("'.self::$apisetting['black_overlay'].'" == "1"){
+    document.getElementById("smart_push_smio_overlay").style.display = "block";
+  }
   document.getElementById("smart_push_smio_window").style.display = "block";
   
   var position = "'.self::$apisetting['desktop_popup_position'].'";

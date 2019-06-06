@@ -22,6 +22,8 @@ class smpush_controller extends smpush_helper{
     $this->add_rewrite_rules();
     $this->initAction();
     $this->moveServiceWokrer();
+    $this->initSupportAMP();
+
     if(self::$defconnection['dbtype'] == 'remote'){
       self::$pushdb = new wpdb(self::$defconnection['dbuser'], self::$defconnection['dbpass'], self::$defconnection['dbname'], self::$defconnection['dbhost']);
       if(!self::$pushdb){
@@ -38,6 +40,10 @@ class smpush_controller extends smpush_helper{
   public function set_def_connection(){
     global $wpdb;
     self::$defconnection = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."push_connection WHERE id='".self::$apisetting['def_connection']."'", 'ARRAY_A');
+  }
+
+  public function initSupportAMP(){
+    new smpush_amp(self::$apisetting);
   }
 
   public static function platformType($platform){
@@ -266,9 +272,17 @@ class smpush_controller extends smpush_helper{
     'desktop_webpush_old',
     'webpush_onesignal_payload',
     'no_disturb',
-    'desktop_welc_redir'
+    'black_overlay',
+    'desktop_welc_redir',
+    'pwa_support',
+    'amp_support',
+    'amp_post_widget',
+    'amp_page_widget',
+    'amp_post_shortcode',
+    'amp_page_shortcode',
+    'pwa_kaludi_support',
     );
-    
+
     foreach($checkbox AS $inptname){
       if(!isset($_POST[$inptname])){
         self::$apisetting[$inptname] = 0;
@@ -370,6 +384,10 @@ class smpush_controller extends smpush_helper{
     self::$apisetting['last_change_time'] = time();
     self::$apisetting['settings_version'] = self::$apisetting['settings_version']+0.01;
 
+    if (self::$apisetting['desktop_webpush'] == 0){
+      self::$apisetting['amp_support'] = 0;
+    }
+
     self::setup_bridge();
     @unlink(smpush_cache_dir.'/jwt_header');
     
@@ -465,16 +483,16 @@ class smpush_controller extends smpush_helper{
   public function cron_setup(){
     if(!wp_next_scheduled('smpush_recurring_cron')){
       wp_schedule_event(current_time('timestamp'), 'smpush_recurring_min', 'smpush_recurring_cron');
-	}
+	  }
     if(!wp_next_scheduled('smpush_silent_cron')){
       wp_schedule_event(current_time('timestamp'), 'hourly', 'smpush_silent_cron');
-	}
+	  }
     if(!wp_next_scheduled('smpush_update_counters')){
       wp_schedule_event(mktime(3,0,0,date('m'),date('d'),date('Y')), 'daily', 'smpush_update_counters');
-	}
+	  }
     if(! wp_next_scheduled('smpush_cron_fewdays')){
       wp_schedule_event(mktime(15,0,0,date('m'),date('d'),date('Y')), 'smpush_few_days', 'smpush_cron_fewdays');
-	}
+	  }
     if(get_transient('smpush_update_notice') !== false){
       add_action('admin_notices', array('smpush_controller', 'update_notice'));
     }
@@ -528,6 +546,7 @@ class smpush_controller extends smpush_helper{
   }
   
   public static function license(){
+    return;
     echo '<div class="notice notice-error"><p>Some of `Push Notification System` plugin functions are disabled. Please enter your purchase code in the `Auto Update` page.</p></div>';
   }
 
@@ -623,6 +642,8 @@ class smpush_controller extends smpush_helper{
   public static function setup_bridge(){
     @unlink(ABSPATH.'/smart_manifest.js');
     @unlink(ABSPATH.'/smart_service_worker.js');
+    @unlink(ABSPATH.'/smart_push_sw.js');
+    @unlink(ABSPATH.'/smwp_amp_sw.js');
     @unlink(ABSPATH.'/smart_bridge.php');
     @unlink(smpush_dir.'/js/frontend_webpush.js');
     if(is_multisite()){
@@ -720,6 +741,7 @@ class smpush_controller extends smpush_helper{
     if(self::$apisetting['smtp_status'] == 0){
       return;
     }
+    if ( !is_object( $mailer ) ) $mailer = (object) $mailer;
     $mailer->IsSMTP();
     $mailer->Port = self::$apisetting['smtp_port'];
     $mailer->Host = self::$apisetting['smtp_host'];
@@ -735,7 +757,7 @@ class smpush_controller extends smpush_helper{
       $mailer->Username = self::$apisetting['smtp_username'];
       $mailer->Password = self::$apisetting['smtp_password'];
     }
-    $mailer->SMTPDebug = (smpush_env == 'debug')? 1 : 0; // enables SMTP debug information (for testing), 1 = errors and messages, 2 = messages only
+    $mailer->SMTPDebug = (smpush_env == 'test')? 1 : 0; // enables SMTP debug information (for testing), 1 = errors and messages, 2 = messages only
   }
   
   public function start_fetch_method(){

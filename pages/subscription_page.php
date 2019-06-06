@@ -119,7 +119,7 @@
 </form>
 
 <script type="text/javascript">
-jQuery(document).ready(function() {
+window.onload = function() {
   jQuery('#smpush_channels').selectize({
     plugins: ['remove_button'],
   });
@@ -219,6 +219,6 @@ jQuery(document).ready(function() {
         }
     },
   });
-  
-});
+
+};
 </script>

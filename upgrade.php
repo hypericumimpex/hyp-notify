@@ -897,6 +897,43 @@ if($version <= 8.42){
 
   $version = 8.43;
 }
+if($version <= 8.43){
+  $setting = get_option('smpush_options');
+  $setting['black_overlay'] = 1;
+  update_option('smpush_options', $setting);
+
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_newsletter_views` ADD `device_hash` CHAR(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL AFTER `deviceid`, ADD INDEX (`device_hash`);');
+
+  smpush_controller::setup_bridge();
+
+  $version = 8.44;
+}
+if($version <= 8.44){
+  smpush_controller::setup_bridge();
+  $version = 8.45;
+}
+if($version <= 8.45){
+  $wpdb->query("CREATE TABLE `".$wpdb->prefix."push_notifier` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `userid` int(11) NOT NULL,
+    `tokenid` int(11) NOT NULL,
+    `object_id` int(11) NOT NULL,
+    `type` varchar(15) NOT NULL,
+    PRIMARY KEY (`id`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
+
+  $setting = get_option('smpush_options');
+  $settings['pwa_support'] = 0;
+  $settings['amp_support'] = 0;
+  $settings['amp_post_widget'] = 0;
+  $settings['amp_page_widget'] = 0;
+  $settings['amp_post_shortcode'] = 0;
+  $settings['amp_page_shortcode'] = 0;
+  $settings['pwa_kaludi_support'] = 0;
+  update_option('smpush_options', $setting);
+
+  $version = 8.46;
+}
 
 delete_transient('smpush_update_notice');
 @unlink(smpush_cache_dir.'/settings');

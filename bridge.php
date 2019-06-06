@@ -19,6 +19,7 @@ class smpush_bridge extends smpush_helper {
   private $apisetting;
   private $wpdb;
   private $table_prefix;
+  private $include_path;
   private $platforms = array('ios','iosfcm','android','wp','wp10','bb','chrome','safari','firefox','opera','edge','samsung','fbmsn','fbnotify','email');
   
   public function __construct($include_path){
@@ -29,6 +30,8 @@ class smpush_bridge extends smpush_helper {
     else{
       $wp_config = $this->readlocalfile('./wp-config.php');
     }
+    $this->include_path = $include_path;
+    $wp_config = $this->strip_comments($wp_config);
     $wp_config = preg_replace('/(require|include_once)([^;]*);/i', '', $wp_config);
     $wp_config = str_replace(array('<?php','?>'), '', $wp_config);
     eval($wp_config);
@@ -73,6 +76,33 @@ class smpush_bridge extends smpush_helper {
     }
     
     $this->ParseOutput = true;
+  }
+
+  private function strip_comments($source) {
+    if (!defined('T_ML_COMMENT')) {
+      define('T_ML_COMMENT', T_COMMENT);
+    } else {
+      define('T_DOC_COMMENT', T_ML_COMMENT);
+    }
+    $tokens = token_get_all($source);
+    $ret = '';
+    foreach ($tokens as $token) {
+      if (is_string($token)) {
+        $ret.= $token;
+      } else {
+        list($id, $text) = $token;
+        switch ($id) {
+          case T_COMMENT:
+          case T_ML_COMMENT: // we've defined this
+          case T_DOC_COMMENT: // and this
+            break;
+          default:
+            $ret.= $text;
+            break;
+        }
+      }
+    }
+    return trim($ret);
   }
   
   public function get_archive(){
@@ -306,22 +336,35 @@ class smpush_bridge extends smpush_helper {
     echo '<script data-cfasync="false" type="text/javascript">window.location="'.$link.'"</script>';
     exit;
   }
-  
+
   public function tracking() {
     $this->CheckParams(array('id','platform','deviceid'));
-    $viewid = $this->wpdb->get_var("SELECT id FROM ".$this->table_prefix."push_newsletter_views WHERE msgid='$_GET[id]' AND deviceid='$_GET[deviceid]' AND action='view'");
+
+    if(is_numeric($_GET['deviceid'])){
+      $where = "deviceid='$_GET[deviceid]'";
+    }
+    else{
+      $where = "device_hash='".md5(base64_decode($_GET['deviceid']))."'";
+    }
+
+    $viewid = $this->wpdb->get_var("SELECT id FROM ".$this->table_prefix."push_newsletter_views WHERE msgid='$_GET[id]' AND $where AND action='view'");
     if(!$viewid){
       $data = array();
       $data['msgid'] = $_GET['id'];
-      $data['deviceid'] = $_GET['deviceid'];
+      if(is_numeric($_GET['deviceid'])){
+        $data['deviceid'] = $_GET['deviceid'];
+      }
+      else{
+        $data['device_hash'] = md5(base64_decode($_GET['deviceid']));
+      }
       $data['platid'] = $_GET['platform'];
       $data['action'] = 'view';
       $this->wpdb->insert($this->table_prefix.'push_newsletter_views', $data);
-      
+
       $this->saveStats($_GET['platform'], 'views', $_GET['id']);
     }
     header('Content-Type: image/gif');
-    echo $this->readlocalfile('images/unnamed.gif');
+    echo $this->readlocalfile($this->include_path.'/images/unnamed.gif');
     exit;
   }
   
@@ -394,6 +437,12 @@ if(isset($_GET['smpushcontrol'])){
       break;
     case 'go':
       $bridge->go();
+      break;
+    case 'tracking':
+      $bridge->tracking();
+      break;
+    case 'views_tracker':
+      $bridge->views_tracker();
       break;
   }
 }
