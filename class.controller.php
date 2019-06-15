@@ -281,6 +281,7 @@ class smpush_controller extends smpush_helper{
     'amp_post_shortcode',
     'amp_page_shortcode',
     'pwa_kaludi_support',
+    'peepso_notifications',
     );
 
     foreach($checkbox AS $inptname){

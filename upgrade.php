@@ -443,7 +443,7 @@ if($version <= 6.2){
   $setting['desktop_welc_message'] = '';
   $setting['desktop_welc_icon'] = '';
   $setting['desktop_welc_link'] = '';
-  $setting['vip'] = 1;
+  $setting['vip'] = 0;
   update_option('smpush_options', $setting);
   $version = 6.3;
 }
@@ -933,6 +933,16 @@ if($version <= 8.45){
   update_option('smpush_options', $setting);
 
   $version = 8.46;
+}
+if($version <= 8.46){
+  $setting = get_option('smpush_options');
+  $settings['peepso_notifications'] = 0;
+  $settings['pwa_kaludi_support'] = 0;
+  update_option('smpush_options', $setting);
+  $version = 8.47;
+}
+if($version <= 8.47){
+  $version = 8.48;
 }
 
 delete_transient('smpush_update_notice');

@@ -25,7 +25,7 @@ class smpush_amp extends smpush_helper{
     add_filter('superpwa_sw_filename', array($this, 'superpwa_compatible'));
     add_shortcode('smart_amp_optin', array($this, 'amp_shortcode_integration_code'));
     add_filter('the_content', array($this, 'amp_integration_code'));
-    add_filter('superpwa_manifest', 'superpwa_add_gcm_sender_id');
+    add_filter('superpwa_manifest', array($this, 'superpwa_add_gcm_sender_id'));
     wp_enqueue_script('smpush-frontend');
 
     if($this->options['pwa_kaludi_support'] == 1){

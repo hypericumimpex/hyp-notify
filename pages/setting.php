@@ -1043,6 +1043,7 @@
                           <?php echo __('Enable PWA support for', 'smpush-plugin-lang')?> <a href="https://wordpress.org/plugins/super-progressive-web-apps/" target="_blank">SuperPWA</a> <?php echo __('plugin', 'smpush-plugin-lang')?></label>
                       </td>
                     </tr>
+                    <input name="pwa_kaludi_support" type="hidden" value="0">
                     <!--<tr valign="top">
                       <td class="first"><label><?php echo __('Enable PWA Support', 'smpush-plugin-lang')?></label></td>
                       <td>
@@ -1923,6 +1924,33 @@
                         <p class="description"><?php echo __('Notice: To use this feature first please enable the cron-job service, Look', 'smpush-plugin-lang')?> <a href="http://smartiolabs.com/product/push-notification-system/documentation#cron-job" target="_blank"><?php echo __('here', 'smpush-plugin-lang')?></a> <?php echo __('for further information', 'smpush-plugin-lang')?></p>                      </td>
                       </td>
                     </tr>
+                    <tr valign="top">
+                      <td colspan="2">
+                          <input type="submit" name="submit" class="button button-primary" value="<?php echo __('Save All Settings', 'smpush-plugin-lang')?>">
+                          <img src="<?php echo smpush_imgpath; ?>/wpspin_light.gif" class="smpush_process" alt="" />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="col-left" class="smpush-tabs-events smpush-radio-tabs">
+        <div id="post-body" class="metabox-holder columns-2">
+          <div>
+            <div id="namediv" class="stuffbox">
+              <h3><label><img src="<?php echo smpush_imgpath; ?>/peepso.png" alt="" /> <span><?php echo __('PeepSo', 'smpush-plugin-lang')?></span></label></h3>
+              <div class="inside">
+                <table class="form-table">
+                  <tbody>
+                  <tr valign="top">
+                    <td>
+                      <label><input name="peepso_notifications" type="checkbox" value="1" <?php if (self::$apisetting['peepso_notifications'] == 1) { ?>checked="checked"<?php } ?>>&nbsp;
+                        <?php echo __('Enable all PeepSo notifications', 'smpush-plugin-lang')?></label>
+                    </td>
+                  </tr>
                     <tr valign="top">
                       <td colspan="2">
                           <input type="submit" name="submit" class="button button-primary" value="<?php echo __('Save All Settings', 'smpush-plugin-lang')?>">

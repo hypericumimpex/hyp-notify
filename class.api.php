@@ -401,14 +401,6 @@ class smpush_api extends smpush_controller{
       $_REQUEST['device_token'] = $fbuid;
       $_REQUEST['device_type'] = 'fbmsn';
       $fbprofile = json_decode($this->buildCurl('https://graph.facebook.com/v2.10/'.$fbuid.'?fields=first_name,last_name&access_token='.self::$apisetting['msn_accesstoken']), true);
-      if($this->curl_status == 400){
-        $fbprofile = json_decode($this->buildCurl('https://graph.facebook.com/v2.10/'.$fbuid.'?fields=&access_token='.self::$apisetting['msn_accesstoken']));
-        if($this->curl_status == 400){
-          $fbprofile = $this->buildCurl('https://graph.facebook.com/v2.10/'.$fbuid.'?fields=first_name,last_name&access_token='.self::$apisetting['msn_accesstoken']);
-          $this->log($fbprofile);
-          exit;
-        }
-      }
       if(!empty($fbprofile['first_name']) || !empty($fbprofile['lname'])){
         $_REQUEST['device_info'] = trim($fbprofile['first_name'].' '.$fbprofile['lname']);
       }

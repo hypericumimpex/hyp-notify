@@ -581,7 +581,7 @@ function openFBpopup(url, elm){
       $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=service_worker&version='.self::$apisetting['settings_version'];
     }
     $output = '
-if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "0" || "'.addslashes(self::$apisetting['desktop_webpush_old']).'" == "1"){
+if("'.self::$apisetting['pwa_support'].'" == "0" && ("'.self::$apisetting['desktop_webpush'].'" == "0" || "'.self::$apisetting['desktop_webpush_old'].'" == "1")){
   document.getElementsByTagName("HEAD")[0].insertAdjacentHTML("afterbegin", "<link rel=\"manifest\" href=\"'. $manifest_link .'\">");
 }
 

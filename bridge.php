@@ -31,14 +31,15 @@ class smpush_bridge extends smpush_helper {
       $wp_config = $this->readlocalfile('./wp-config.php');
     }
     $this->include_path = $include_path;
+    $wp_config = str_replace('*/', "*/\n", $wp_config);
     $wp_config = $this->strip_comments($wp_config);
     $wp_config = preg_replace('/(require|include_once)([^;]*);/i', '', $wp_config);
     $wp_config = str_replace(array('<?php','?>'), '', $wp_config);
     eval($wp_config);
-    
+
     require($include_path.'/lib/db/ez_sql_core.php');
     define('CACHE_DIR', $include_path.'/lib/cache');
-    
+
     if(function_exists ('mysqli_connect')){
       require($include_path.'/lib/db/ez_sql_mysqli.php');
       $this->wpdb = new ezSQL_mysqli();
@@ -51,9 +52,9 @@ class smpush_bridge extends smpush_helper {
     }
     $this->wpdb->query("SET SESSION sql_mode = 'NO_ENGINE_SUBSTITUTION';");
     $this->table_prefix = $table_prefix;
-    
+
     $this->loadSettings();
-    
+
     if(defined('MULTISITE') && MULTISITE){
       $URI = explode('?', $_SERVER['REQUEST_URI']);
       $cuBlog = basename(addslashes($URI[0]));
@@ -74,7 +75,7 @@ class smpush_bridge extends smpush_helper {
         $this->loadSettings($netBlogID);
       }
     }
-    
+
     $this->ParseOutput = true;
   }
 
@@ -104,7 +105,7 @@ class smpush_bridge extends smpush_helper {
     }
     return trim($ret);
   }
-  
+
   public function get_archive(){
     $order = 'DESC';
     $where = '';
@@ -158,36 +159,36 @@ class smpush_bridge extends smpush_helper {
     elseif($_REQUEST['userid']){
       if(!empty($_REQUEST['mainPlatforms'])){
         if($_REQUEST['platform'] == 'mobile'){
-          $where = "AND ".$this->wpdb->prefix."push_history.platform='mobile'";
+          $where = "AND ".$this->table_prefix."push_history.platform='mobile'";
         }
         elseif($_REQUEST['mainPlatforms'] == 'fbmsn'){
-          $where = "AND ".$this->wpdb->prefix."push_history.platform='fbmsn'";
+          $where = "AND ".$this->table_prefix."push_history.platform='fbmsn'";
         }
         elseif($_REQUEST['mainPlatforms'] == 'fbnotify'){
-          $where = "AND ".$this->wpdb->prefix."push_history.platform='fbnotify'";
+          $where = "AND ".$this->table_prefix."push_history.platform='fbnotify'";
         }
         elseif($_REQUEST['mainPlatforms'] == 'email'){
-          $where = "AND ".$this->wpdb->prefix."push_history.platform='email'";
+          $where = "AND ".$this->table_prefix."push_history.platform='email'";
         }
         else{
-          $where = "AND ".$this->wpdb->prefix."push_history.platform='web'";
+          $where = "AND ".$this->table_prefix."push_history.platform='web'";
         }
       }
       else{
-        $where = "AND ".$this->wpdb->prefix."push_history.platform='web'";
+        $where = "AND ".$this->table_prefix."push_history.platform='web'";
       }
-      $sql = "SELECT $push_archiveTB.id,$push_archiveTB.message,".$this->wpdb->prefix."push_history.timepost AS starttime,".$this->wpdb->prefix."push_history.platform AS mainPlatform,$push_archiveTB.options FROM ".$this->wpdb->prefix."push_history
-      INNER JOIN $push_archiveTB ON($push_archiveTB.id=".$this->wpdb->prefix."push_history.msgid AND $push_archiveTB.status='1')
-      WHERE ".$this->wpdb->prefix."push_history.userid='$_REQUEST[userid]' $where GROUP BY ".$this->wpdb->prefix."push_history.msgid ORDER BY ".$this->wpdb->prefix."push_history.timepost $order";
+      $sql = "SELECT $push_archiveTB.id,$push_archiveTB.message,".$this->table_prefix."push_history.timepost AS starttime,".$this->table_prefix."push_history.platform AS mainPlatform,$push_archiveTB.options FROM ".$this->table_prefix."push_history
+      INNER JOIN $push_archiveTB ON($push_archiveTB.id=".$this->table_prefix."push_history.msgid AND $push_archiveTB.status='1')
+      WHERE ".$this->table_prefix."push_history.userid='$_REQUEST[userid]' $where GROUP BY ".$this->table_prefix."push_history.msgid ORDER BY ".$this->table_prefix."push_history.timepost $order";
       $sql = $this->Paging($sql, $this->wpdb);
       $gets = $this->wpdb->get_results($sql, 'ARRAY_A');
-      if(!$gets) return $this->output(0, __('No result found', 'smpush-plugin-lang'));
+      if(!$gets) return $this->output(0, gettext('No result found', 'smpush-plugin-lang'));
     }
     else{
-      $sql = "SELECT id,message,starttime,options FROM ".$this->wpdb->prefix."push_archive WHERE send_type IN('now','time','geofence','custom') $where ORDER BY id ".$order;
+      $sql = "SELECT id,message,starttime,options FROM ".$this->table_prefix."push_archive WHERE send_type IN('now','time','geofence','custom') $where ORDER BY id ".$order;
       $sql = $this->Paging($sql, $this->wpdb);
       $gets = $this->wpdb->get_results($sql, 'ARRAY_A');
-      if(!$gets) return $this->output(0, __('No result found', 'smpush-plugin-lang'));
+      if(!$gets) return $this->output(0, gettext('No result found', 'smpush-plugin-lang'));
     }
     if(file_exists(ABSPATH.'/smart_bridge.php')){
       $siteurl = $this->apisetting['home_url'].'/smart_bridge.php';

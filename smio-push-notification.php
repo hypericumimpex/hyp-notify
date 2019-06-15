@@ -4,7 +4,7 @@ Plugin Name: HYP Smart Notifications
 Plugin URI: https://github.com/hypericumimpex/hyp-notify/
 Description: Provides a complete solution to send web and mobile notification messages to platforms iOS, Android, Chrome, Safari, Firefox, Opera, Edge, Samsung Browser, Windows Phone 8, Windows 10, BlackBerry 10, FB Messenger and Newsletter.
 Author: Hypericum
-Version: 8.4.6
+Version: 8.4.8
 Author URI: https://github.com/hypericumimpex/
 */
 
@@ -14,7 +14,7 @@ define('smpush_dir', plugin_dir_path(__FILE__));
 define('smpush_imgpath', plugins_url('/images', __FILE__));
 define('smpush_csspath', plugins_url('/css', __FILE__));
 define('smpush_jspath', plugins_url('/js', __FILE__));
-define('SMPUSHVERSION', 8.46);
+define('SMPUSHVERSION', 8.48);
 define('smpush_env', 'production');//debug, production
 define('smpush_env_demo', false);
 define('smpush_mobapp_mode', false);
@@ -39,6 +39,7 @@ require(smpush_dir.'/class.localization.php');
 require(smpush_dir.'/class.event.manager.php');
 require(smpush_dir.'/class.shortcode.php');
 require(smpush_dir.'/class.amp.php');
+require(smpush_dir.'/class.peepso.php');
 
 $upload_dir = wp_upload_dir();
 define('smpush_upload_dir', $upload_dir['basedir']);
@@ -66,6 +67,7 @@ add_action('widgets_init', array('smpush_modules', 'widget'));
 add_action('plugins_loaded', array('smpush_localization', 'load_textdomain'));
 add_action('bp_notification_after_save', array('smpush_events', 'buddy_notifications'), 99, 1);
 add_action('bp_activity_after_save', array('smpush_events', 'buddy_activity'), 99, 1);
+add_filter('peepso_notifications_data_before_add', array('smpush_peepso_events', 'peepso_notification'), 99);
 add_action('woocommerce_before_checkout_form', array('smpush_shortcode', 'woo_messenger_checkout'));
 add_action('woocommerce_after_add_to_cart_button', array('smpush_shortcode', 'woo_messenger_cartbtn'));
 add_filter('woocommerce_get_availability_text', array('smpush_shortcode', 'woo_waiting_notifier'), 99, 1);
@@ -108,9 +110,10 @@ function smpush_frontend_scripts(){
   wp_register_script('smpush-selectize', smpush_jspath.'/selectize.min.js', array('jquery'), SMPUSHVERSION);
   wp_register_script('smpush-gmap-js', smpush_jspath.'/gmap.js', array('jquery', 'smpush-gmap-source'), SMPUSHVERSION);
   wp_register_script('smpush-frontend', smpush_jspath.'/frontend.js', array('jquery'), SMPUSHVERSION);
-  wp_register_style('smpush-frontend', smpush_csspath.'/frontend.css', array(), SMPUSHVERSION);
+  wp_register_style('smpush-frontend', smpush_csspath.'/frontend.css', array(), SMPUSHVERSION, true);
   wp_register_style('smpush-selectize', smpush_csspath.'/selectize.css', array(), SMPUSHVERSION);
   wp_register_style('smpush-tooltipster', smpush_csspath.'/tooltipster.bundle.min.css', array(), SMPUSHVERSION);
+  wp_enqueue_script('smpush-frontend');
 }
 
 function smpush_scripts(){

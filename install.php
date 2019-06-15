@@ -430,7 +430,7 @@ $setting = array(
   'safari_passphrase' => '',
   'ios_titanium_payload' => 0,
   'android_titanium_payload' => 0,
-  'purchase_code' => '123',//do not steal so you have honor
+  'purchase_code' => 1,//do not steal so you have honor
   'vip' => 1,//do not steal so you have honor
   'wp_authed' => '0',
   'wp_cert' => '',
@@ -584,13 +584,14 @@ $setting['chrome_vapid_private'] = '';
 $setting['settings_version'] = SMPUSHVERSION;
 $setting['black_overlay'] = 1;
 $setting['no_disturb'] = 0;
-$settings['pwa_support'] = 0;
-$settings['amp_support'] = 0;
-$settings['amp_post_widget'] = 0;
-$settings['amp_page_widget'] = 0;
-$settings['amp_post_shortcode'] = 0;
-$settings['amp_page_shortcode'] = 0;
-$settings['pwa_kaludi_support'] = 0;
+$setting['pwa_support'] = 0;
+$setting['amp_support'] = 0;
+$setting['amp_post_widget'] = 0;
+$setting['amp_page_widget'] = 0;
+$setting['amp_post_shortcode'] = 0;
+$setting['amp_page_shortcode'] = 0;
+$setting['pwa_kaludi_support'] = 0;
+$setting['peepso_notifications'] = 0;
 
 add_option('smpush_options', $setting);
 add_option('smpush_version', str_replace(',', '.', SMPUSHVERSION));
