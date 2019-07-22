@@ -4,7 +4,7 @@ Plugin Name: HYP Smart Notifications
 Plugin URI: https://github.com/hypericumimpex/hyp-notify/
 Description: Provides a complete solution to send web and mobile notification messages to platforms iOS, Android, Chrome, Safari, Firefox, Opera, Edge, Samsung Browser, Windows Phone 8, Windows 10, BlackBerry 10, FB Messenger and Newsletter.
 Author: Hypericum
-Version: 8.4.8
+Version: 8.4.83
 Author URI: https://github.com/hypericumimpex/
 */
 
@@ -14,7 +14,7 @@ define('smpush_dir', plugin_dir_path(__FILE__));
 define('smpush_imgpath', plugins_url('/images', __FILE__));
 define('smpush_csspath', plugins_url('/css', __FILE__));
 define('smpush_jspath', plugins_url('/js', __FILE__));
-define('SMPUSHVERSION', 8.48);
+define('SMPUSHVERSION', 8.483);
 define('smpush_env', 'production');//debug, production
 define('smpush_env_demo', false);
 define('smpush_mobapp_mode', false);
@@ -110,7 +110,7 @@ function smpush_frontend_scripts(){
   wp_register_script('smpush-selectize', smpush_jspath.'/selectize.min.js', array('jquery'), SMPUSHVERSION);
   wp_register_script('smpush-gmap-js', smpush_jspath.'/gmap.js', array('jquery', 'smpush-gmap-source'), SMPUSHVERSION);
   wp_register_script('smpush-frontend', smpush_jspath.'/frontend.js', array('jquery'), SMPUSHVERSION);
-  wp_register_style('smpush-frontend', smpush_csspath.'/frontend.css', array(), SMPUSHVERSION, true);
+  wp_register_style('smpush-frontend', smpush_csspath.'/frontend.css', array(), SMPUSHVERSION);
   wp_register_style('smpush-selectize', smpush_csspath.'/selectize.css', array(), SMPUSHVERSION);
   wp_register_style('smpush-tooltipster', smpush_csspath.'/tooltipster.bundle.min.css', array(), SMPUSHVERSION);
   wp_enqueue_script('smpush-frontend');

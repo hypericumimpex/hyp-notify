@@ -45,6 +45,9 @@ class smpush_shortcode extends smpush_controller {
   }
   
   public static function fbloign($args){
+    if(is_user_logged_in()){
+      return '';
+    }
     wp_enqueue_style('smpush-frontend');
     include(smpush_dir.'/lib/facebook/fbsdk.php');
     $facebook = new FacebookSDK(array(

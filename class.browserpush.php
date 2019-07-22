@@ -1059,7 +1059,7 @@ background-color: #5db166;text-transform: none; color: #fff; border: none; box-s
   }
   
   public static function messengerOfficialWidget(){
-    echo '<div class="fb-customerchat" minimized="true" page_id="'.self::$apisetting['msn_official_fbpage_id'].'"></div>';
+    echo '<div class="fb-customerchat" greeting_dialog_display="show" page_id="'.self::$apisetting['msn_official_fbpage_id'].'"></div>';
   }
   
   public static function messengerCustomWidget(){

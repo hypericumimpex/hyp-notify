@@ -547,7 +547,6 @@ class smpush_controller extends smpush_helper{
   }
   
   public static function license(){
-    return;
     echo '<div class="notice notice-error"><p>Some of `Push Notification System` plugin functions are disabled. Please enter your purchase code in the `Auto Update` page.</p></div>';
   }
 
@@ -618,8 +617,8 @@ class smpush_controller extends smpush_helper{
         add_action('admin_notices', array('smpush_controller', 'bizfeature'));
       }
     }
-    wp_register_script('smpush-fb-chat-sdk', 'https://connect.facebook.net/'.self::$apisetting['msn_lang'].'/sdk/xfbml.customerchat.js#xfbml=1&version=v2.11');
-    wp_register_script('smpush-fb-sdk', 'https://connect.facebook.net/'.self::$apisetting['msn_lang'].'/sdk.js#xfbml=1&version=v2.11');
+    wp_register_script('smpush-fb-chat-sdk', 'https://connect.facebook.net/'.self::$apisetting['msn_lang'].'/sdk/xfbml.customerchat.js#xfbml=1&version=v3.3');
+    wp_register_script('smpush-fb-sdk', 'https://connect.facebook.net/'.self::$apisetting['msn_lang'].'/sdk.js#xfbml=1&version=v2.12');
     wp_register_script('smpush-gmap-source', 'https://maps.googleapis.com/maps/api/js?v=3.exp&key='.self::$apisetting['gmaps_apikey'], array('jquery'), SMPUSHVERSION);
   }
 

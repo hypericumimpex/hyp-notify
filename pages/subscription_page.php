@@ -78,9 +78,7 @@
     <div style="margin-top:18px" class="fb-send-to-messenger" 
       messenger_app_id="<?php echo self::$apisetting['msn_appid']?>" 
       page_id="<?php echo self::$apisetting['msn_official_fbpage_id']?>" 
-      data-ref="subscribed" 
-      color="white" 
-      size="xlarge"></div>
+      data-ref="subscribed" color="white" cta_text="KEEP_ME_UPDATED" size="xlarge"></div>
   </div>
   
 </div>

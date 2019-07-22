@@ -944,6 +944,17 @@ if($version <= 8.46){
 if($version <= 8.47){
   $version = 8.48;
 }
+if($version <= 8.48){
+  $version = 8.481;
+}
+if($version <= 8.481){
+  $version = 8.482;
+  smpush_controller::setup_bridge();
+}
+if($version <= 8.482){
+  $version = 8.483;
+  smpush_controller::setup_bridge();
+}
 
 delete_transient('smpush_update_notice');
 @unlink(smpush_cache_dir.'/settings');

@@ -400,7 +400,7 @@ class smpush_api extends smpush_controller{
       $fbuid = $input['entry'][0]['messaging'][0]['sender']['id'];
       $_REQUEST['device_token'] = $fbuid;
       $_REQUEST['device_type'] = 'fbmsn';
-      $fbprofile = json_decode($this->buildCurl('https://graph.facebook.com/v2.10/'.$fbuid.'?fields=first_name,last_name&access_token='.self::$apisetting['msn_accesstoken']), true);
+      $fbprofile = json_decode($this->buildCurl('https://graph.facebook.com/v2.12/'.$fbuid.'?fields=first_name,last_name&access_token='.self::$apisetting['msn_accesstoken']), true);
       if(!empty($fbprofile['first_name']) || !empty($fbprofile['lname'])){
         $_REQUEST['device_info'] = trim($fbprofile['first_name'].' '.$fbprofile['lname']);
       }
@@ -896,6 +896,10 @@ class smpush_api extends smpush_controller{
       $message['title'] = self::cleanString($options['desktop_title'], true);
       if(empty($_REQUEST['platform']) && (empty($_REQUEST['mainPlatforms']) || $_REQUEST['mainPlatforms'] != 'web')){
         $message['link'] = '';
+        $payload = json_decode($options['extravalue'], true);
+        if(!empty($payload) && !empty($payload['link'])){
+          $message['link'] = $payload['link'];
+        }
       }
       elseif(self::$apisetting['no_disturb'] == 1){
         $message['link'] = $siteurl;

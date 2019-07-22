@@ -226,6 +226,10 @@ class smpush_bridge extends smpush_helper {
       $message['title'] = self::cleanString($options['desktop_title'], true);
       if(empty($_REQUEST['platform']) && (empty($_REQUEST['mainPlatforms']) || $_REQUEST['mainPlatforms'] != 'web')){
         $message['link'] = '';
+        $payload = json_decode($options['extravalue'], true);
+        if(!empty($payload) && !empty($payload['link'])){
+          $message['link'] = $payload['link'];
+        }
       }
       elseif($this->apisetting['no_disturb'] == 1){
         $message['link'] = $this->apisetting['home_url'];

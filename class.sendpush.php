@@ -111,6 +111,7 @@ class smpush_sendpush extends smpush_controller {
   );
 
   private static $wpurl;
+  private static $fbattachment;
 
   public function __construct() {
     parent::__construct();
@@ -2402,6 +2403,27 @@ class smpush_sendpush extends smpush_controller {
           );
           $params['message'] = json_encode($msnTemplate);
         }
+        elseif(empty(self::$sendoptions['fbmsn_subject']) && !empty(self::$sendoptions['fbmsn_message']) && empty(self::$sendoptions['fbmsn_button'])){
+        }
+        elseif(empty(self::$sendoptions['fbmsn_subject']) && !empty(self::$sendoptions['fbmsn_image']) && empty(self::$sendoptions['fbmsn_button'])){
+          if(!empty(self::$sendoptions['fbmsn_image'])){
+            self::facebookAttatchMedia(self::cleanString(urldecode(self::$sendoptions['fbmsn_image'])));
+
+            if(!empty(self::$fbattachment['attachment_id'])){
+              $msnTemplate = array();
+              $msnTemplate['attachment'] = array();
+              $msnTemplate['attachment']['type'] = 'template';
+              $msnTemplate['attachment']['payload'] = array(
+                'template_type' => 'media',
+                'elements' => array(0 => array(
+                  'media_type' => 'image',
+                  'attachment_id' => self::$fbattachment['attachment_id'],
+                ))
+              );
+              $params['message'] = json_encode($msnTemplate);
+            }
+          }
+        }
         elseif(!empty(self::$sendoptions['desktop_title'])){
           $msnTemplate = array();
           $msnTemplate['attachment'] = array();
@@ -2433,14 +2455,14 @@ class smpush_sendpush extends smpush_controller {
           self::updateStats('fbmsnsend', 1, $cronjob, $msgid);
         }
         else{
-          $response = json_decode($helper->buildCurl('https://graph.facebook.com/v2.10/me/messages', false, $params), true);
+          $response = json_decode($helper->buildCurl('https://graph.facebook.com/v3.3/me/messages', false, $params), true);
           if($helper->curl_status == 200){
             self::updateStats('fbmsnsend', 1, $cronjob, $msgid);
           }
           elseif($helper->curl_status == 400 && isset($response['error']['message']) && $response['error']['code'] == 190){
             self::jsonPrint(0, '<p class="error">'.'Facebook Messenger: '.$response['error']['message'].'</p>');
           }
-          elseif($helper->curl_status == 400){
+          elseif($helper->curl_status == 400 && isset($response['error']['message']) && $response['error']['code'] == 551){
             self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {active_name}='0' WHERE {md5token_name}='".md5($sDevice['token'])."' AND {type_name}='fbmsn'"));
             self::updateStats('fbmsnsend', 1, $cronjob, $msgid);
             self::updateStats('fbmsnfail', 1, $cronjob, $msgid);
@@ -2585,6 +2607,23 @@ class smpush_sendpush extends smpush_controller {
       }, $message);
     }
     return $message;
+  }
+
+  public static function facebookAttatchMedia($img_link) {
+    if(!empty(self::$fbattachment)){
+      return;
+    }
+    $msnTemplate = array();
+    $msnTemplate['attachment'] = array();
+    $msnTemplate['attachment']['type'] = 'image';
+    $msnTemplate['attachment']['payload'] = array(
+      "is_reusable" => true,
+      'url' => $img_link
+    );
+    $attach_params = [];
+    $attach_params['message'] = json_encode($msnTemplate);
+    $helper = new smpush_helper();
+    self::$fbattachment = json_decode($helper->buildCurl('https://graph.facebook.com/v3.3/me/message_attachments?access_token='.self::$apisetting['msn_accesstoken'], false, $attach_params), true);
   }
 
   public static function connectFeedback($all_count, $cronjob = false, $msgid = 0) {

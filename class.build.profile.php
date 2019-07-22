@@ -91,8 +91,8 @@ class smpush_build_profile extends smpush_controller {
     if(empty(self::$apisetting['desktop_run_places'])){
       self::$apisetting['desktop_run_places'] = array();
     }
-    if(!empty(self::$apisetting['desktop_showin_pageids']) && is_page() && in_array(get_the_ID(), self::$apisetting['desktop_showin_pageids'])){
-      $exit = false;
+    if(!empty(self::$apisetting['desktop_showin_pageids']) && is_page() && !in_array(get_the_ID(), self::$apisetting['desktop_showin_pageids'])){
+      return;
     }
     elseif(! in_array('all', self::$apisetting['desktop_run_places'])){
       $exit = true;
