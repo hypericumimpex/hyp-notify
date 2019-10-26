@@ -415,3 +415,9 @@ background-color: #fdfdfd!important;
     border-bottom: 1px solid #ccc;
     padding-bottom: 10px;
 }
+.smpush_table_head{
+  font-size: 16px!important;
+  border-left: 4px solid #797979;
+  text-indent: 17px;
+  background: #dcdbdb;
+}

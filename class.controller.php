@@ -547,6 +547,7 @@ class smpush_controller extends smpush_helper{
   }
   
   public static function license(){
+    return;
     echo '<div class="notice notice-error"><p>Some of `Push Notification System` plugin functions are disabled. Please enter your purchase code in the `Auto Update` page.</p></div>';
   }
 

@@ -631,7 +631,7 @@ class smpush_events extends smpush_controller{
           $post = $wpdb->get_row("SELECT post_title,post_author,guid,post_type FROM ".$wpdb->prefix."posts WHERE ID='$postid'", 'ARRAY_A');
           $subject = self::ShortString($post['post_title'], 200);
           $message = self::processNotifBody('e_newcomment_allusers', $subject);
-          $commentersIDs = self::AllUsersRelatedComment($postid, $commentid);
+          $commentersIDs = self::AllUsersRelatedComment($postid, $commentid, $nowcomment->user_id);
 
           $message = apply_filters('smpush_events_newcomment_allusers_message', $message, $postid, $commentid);
           $payload = apply_filters('smpush_events_newcomment_allusers_payload', $postid, $message, $commentid);
@@ -696,9 +696,9 @@ class smpush_events extends smpush_controller{
     return $userid;
   }
   
-  private static function AllUsersRelatedComment($postid, $commentid){
+  private static function AllUsersRelatedComment($postid, $commentid, $user_id){
     global $wpdb;
-    $userids = $wpdb->get_results("SELECT DISTINCT(user_id) FROM ".$wpdb->prefix."comments WHERE comment_post_ID='$postid' AND comment_ID<>$commentid AND comment_approved='1'");
+    $userids = $wpdb->get_results("SELECT DISTINCT(user_id) FROM ".$wpdb->prefix."comments WHERE comment_post_ID='$postid' AND comment_ID<>$commentid AND user_id<>$user_id AND comment_approved='1'");
     if(!$userids) return false;
     else{
       $ids = array();

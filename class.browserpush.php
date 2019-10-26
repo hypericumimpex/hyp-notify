@@ -502,6 +502,7 @@ function smpushWelcomeMSG(){
         icon: "'.self::$apisetting['desktop_welc_icon'].'",
         body: "'.addslashes(self::$apisetting['desktop_welc_message']).'",
         tag: "'.addslashes(self::$apisetting['desktop_welc_link']).'",
+        data: {target: "'.addslashes(self::$apisetting['desktop_welc_link']).'"},
         requireInteraction: true
       });
     });
@@ -581,8 +582,11 @@ function openFBpopup(url, elm){
       $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=service_worker&version='.self::$apisetting['settings_version'];
     }
     $output = '
-if("'.self::$apisetting['pwa_support'].'" == "0" && ("'.self::$apisetting['desktop_webpush'].'" == "0" || "'.self::$apisetting['desktop_webpush_old'].'" == "1")){
-  document.getElementsByTagName("HEAD")[0].insertAdjacentHTML("afterbegin", "<link rel=\"manifest\" href=\"'. $manifest_link .'\">");
+if(("'.self::$apisetting['pwa_support'].'" == "0" || "'.((function_exists('superpwa_add_gcm_sender_id'))? 1 : 0).'" == 0 ) && ("'.self::$apisetting['desktop_webpush'].'" == "0" || "'.self::$apisetting['desktop_webpush_old'].'" == "1")){
+  window.addEventListener("load", function() {
+    smpush_debug("manifest registered successfully");
+    document.getElementsByTagName("HEAD")[0].insertAdjacentHTML("afterbegin", "<link rel=\"manifest\" href=\"'. $manifest_link .'\">");
+  });
 }
 
 function smpush_endpointWorkaround(endpoint){
@@ -990,6 +994,40 @@ position: absolute;padding: 0;font-size: 11px;color: #ccc;left: 210px;bottom: 0;
   #smart_push_smio_note{
     margin-left:70px;
   }
+}
+      ';
+    }
+    elseif(self::$apisetting['desktop_popup_layout'] == 'news'){
+      $html .= '
+#smart_push_smio_window{
+direction:ltr;display:none;max-width:94%;z-index:99999999;font-family: Arial, sans-serif;text-align:left;width:450px;background:#fff;padding:10px;border: 1px solid #D0D0D0;
+}
+#smart_push_smio_logo{
+float: left;width: 50px;height: 50px;margin: 18px 0 0 14px;border: 0;
+}
+#smart_push_smio_msg{
+font: 16px Arial,Helvetica,sans-serif;margin: 9px 0;margin-left: 90px;padding: 0;cursor: default;color: #000;text-align: left;font-weight: 700;
+}
+#smart_push_smio_note{
+font: 14px Arial,Helvetica,sans-serif;margin: 12px 0;margin-left: 90px;padding: 0 5px 10px 0;cursor: default;color: #4A4A4A;text-align: left;font-weight: 300;
+}
+#smart_push_smio_agreement{
+font: 12px open_sanslight,Arial,Helvetica,sans-serif;margin:0;margin-left:90px;padding:0 5px 10px 0;color:#9E9E9E;text-align:left;
+}
+#smart_push_smio_footer{
+text-align: right;margin: 0px 15px 7px 0;
+}
+#smart_push_smio_not_allow, #smart_push_smio_not_allow:hover{
+width:115px;text-transform: none;margin: 0 5px;background:transparent;color:#cacaca;font-weight:300;cursor:pointer;font-size: 16px;border-radius: inherit;padding: 10px 15px;font-family: Arial;
+}
+#smart_push_smio_allow, #smart_push_smio_allow:hover{
+min-width:115px;text-transform: none;margin: 0 5px;background:#50b866;color:#fff;font-weight:700;cursor:pointer;font-size: 15px;border-radius: inherit;padding: 10px 15px;font-family: Arial;
+}
+#smart_push_smio_close{
+display:block!important;position: absolute;right: 8px;top: 4px;background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAQCAIAAABGNLJTAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABpSURBVChTzZBLCsAgDER7Zg9iCDmqSzd9MCJtbSvunEXI540kHnVFm9LuHhGlFJUklDRVohvNLKWUc4ZDJJQ02/hBQ5iZDEKJNNt43LsbRhS90Hp1TneU2Fe6Gv6ulOHzyrUfnGoXutYTA3eKL8daaukAAAAASUVORK5CYII=");width: 12px;height: 13px;cursor: pointer;
+}
+#smart_push_smio_copyrights{
+position: absolute;padding: 0;font-size: 11px;color: #ccc;left: 210px;bottom: 0;
 }
       ';
     }

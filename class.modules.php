@@ -204,7 +204,7 @@ class smpush_modules extends smpush_controller {
     elseif ($_GET['action'] == 'jsontemplate') {
       global $wpdb;
       $template = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."push_newsletter_templates WHERE id='$_GET[template]'");
-      if($template->static == 1){
+      if($_GET['template'] <= 9){
         $templateContents = file_get_contents(smpush_dir.'/newsletter/'.$template->template.'.json');
         $templateContents = str_replace('{SITEDOMAIN}', get_bloginfo('wpurl'), $templateContents);
         $templateContents = str_replace('{ASSETS_LINK}', (plugins_url().'/smio-push-notification/newsletter/images'), $templateContents);
@@ -244,6 +244,7 @@ class smpush_modules extends smpush_controller {
       $wpdb->query("DELETE FROM ".$wpdb->prefix."push_statistics WHERE msgid='$_GET[id]'");
       $wpdb->query("DELETE FROM ".$wpdb->prefix."push_desktop_messages WHERE msgid='$_GET[id]'");
       $wpdb->query("DELETE FROM ".$wpdb->prefix."push_history WHERE msgid='$_GET[id]'");
+      $wpdb->query("DELETE FROM ".$wpdb->prefix."push_newsletter_templates WHERE msgid='$_GET[id]'");
       exit;
     }
     if (isset($_GET['empty'])) {
@@ -253,6 +254,7 @@ class smpush_modules extends smpush_controller {
       $wpdb->query("TRUNCATE ".$wpdb->prefix."push_queue");
       $wpdb->query("TRUNCATE ".$wpdb->prefix."push_desktop_messages");
       $wpdb->query("TRUNCATE ".$wpdb->prefix."push_history");
+      $wpdb->query("DELETE FROM ".$wpdb->prefix."push_newsletter_templates WHERE static='0'");
       $wpdb->query("DELETE FROM ".$wpdb->prefix."push_statistics WHERE msgid>0");
       wp_redirect($pageurl);
     }

@@ -454,8 +454,8 @@ class smpush_cronsend extends smpush_controller {
       die('Please enter your purchase code in the `Auto Update` page.');
     }
 
-    if(file_exists(smpush_dir.'/class.sendcron.php.pid') && (filemtime(smpush_dir.'/class.sendcron.php.pid')+900) < TIMENOW){
-      @unlink(smpush_dir.'/class.sendcron.php.pid');
+    if(file_exists(smpush_dir.'/index.php.pid') && (filemtime(smpush_dir.'/index.php.pid')+900) < current_time('timestamp')){
+      @unlink(smpush_dir.'/index.php.pid');
     }
 
     if(function_exists('posix_kill') && function_exists('getmypid')){
@@ -608,6 +608,7 @@ class smpush_cronsend extends smpush_controller {
           self::$andDelIDS[] = $queueone->id;
           self::$andDevices['token'][self::$andCounter] = $queueone->token;
           self::$andDevices['id'][self::$andCounter] = $queueone->token_id;
+          self::$andDevices['badge'][self::$andCounter] = $queueone->counter;
           self::$andCounter++;
         }
         elseif($queueone->device_type == $types_name->wp_name) {
@@ -686,6 +687,7 @@ class smpush_cronsend extends smpush_controller {
           self::$DelIDS15[] = $queueone->id;
           self::$Devices15['token'][self::$Counter15] = $queueone->token;
           self::$Devices15['id'][self::$Counter15] = $queueone->token_id;
+          self::$Devices15['badge'][self::$Counter15] = $queueone->counter;
           self::$Counter15++;
         }
         else{

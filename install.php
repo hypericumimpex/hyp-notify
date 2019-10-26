@@ -430,7 +430,7 @@ $setting = array(
   'safari_passphrase' => '',
   'ios_titanium_payload' => 0,
   'android_titanium_payload' => 0,
-  'purchase_code' => 'codexinh',//do not steal so you have honor
+  'purchase_code' => 'GANJAPARKER',//do not steal so you have honor
   'vip' => 1,//do not steal so you have honor
   'wp_authed' => '0',
   'wp_cert' => '',
@@ -557,7 +557,7 @@ $setting = array(
   'gdpr_subs_btn' => 0,
   'gdpr_ver_option' => 0,
   'gdpr_ver_text' => __('By proceeding in this form you will receive our marketing notifications and agree to our #Privacy Policy# and #Terms of Use#', 'smpush-plugin-lang'),
-  'fast_bridge' => 0,
+  'fast_bridge' => 1,
   'uninstall_action' => 'files',
   'last_change_time' => time(),
 );

@@ -261,7 +261,12 @@ class smpush_sendpush extends smpush_controller {
       $wpdb->insert($wpdb->prefix.'push_archive', $data);
       $msgid = $wpdb->insert_id;
       if(!empty($emailjson)){
-        $wpdb->insert($wpdb->prefix.'push_newsletter_templates', array('msgid' => $msgid, 'template' => $emailjson, 'static' => 0));
+        $newsletter_temp = array('msgid' => $msgid, 'template' => $emailjson, 'static' => 0);
+        if($sendtype == 'template'){
+          $newsletter_temp['title'] = $data['name'];
+          $newsletter_temp['static'] = 1;
+        }
+        $wpdb->insert($wpdb->prefix.'push_newsletter_templates', $newsletter_temp);
       }
     }
     else{
@@ -269,10 +274,20 @@ class smpush_sendpush extends smpush_controller {
       if(!empty($emailjson)){
         $jsonemailid = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."push_newsletter_templates WHERE msgid='$msgid'");
         if($jsonemailid){
-          $wpdb->update($wpdb->prefix.'push_newsletter_templates', array('template' => $emailjson), array('id' => $jsonemailid));
+          $newsletter_temp = array('template' => $emailjson, 'static' => 0);
+          if($sendtype == 'template'){
+            $newsletter_temp['title'] = $data['name'];
+            $newsletter_temp['static'] = 1;
+          }
+          $wpdb->update($wpdb->prefix.'push_newsletter_templates', $newsletter_temp, array('id' => $jsonemailid));
         }
         else{
-          $wpdb->insert($wpdb->prefix.'push_newsletter_templates', array('msgid' => $msgid, 'template' => $emailjson, 'static' => 0));
+          $newsletter_temp = array('msgid' => $msgid, 'template' => $emailjson, 'static' => 0);
+          if($sendtype == 'template'){
+            $newsletter_temp['title'] = $data['name'];
+            $newsletter_temp['static'] = 1;
+          }
+          $wpdb->insert($wpdb->prefix.'push_newsletter_templates', $newsletter_temp);
         }
       }
     }
@@ -1372,6 +1387,7 @@ class smpush_sendpush extends smpush_controller {
       $android_devices['token'][$acounter] = $queueone->token;
       $android_devices['id'][$acounter] = $queueone->id;
       $android_devices['queue_id'][$acounter] = $queueone->id;
+      $android_devices['badge'][$acounter] = $queueone->counter;
       $acounter++;
     }
     foreach ($queue3 AS $queueone) {
@@ -1444,6 +1460,7 @@ class smpush_sendpush extends smpush_controller {
       $iosfcm_devices['token'][$counter14] = $queueone->token;
       $iosfcm_devices['id'][$counter14] = $queueone->token_id;
       $iosfcm_devices['queue_id'][$counter14] = $queueone->id;
+      $iosfcm_devices['badge'][$acounter] = $queueone->counter;
       $counter14++;
     }
     foreach ($queue15 AS $queueone) {
@@ -1939,6 +1956,9 @@ class smpush_sendpush extends smpush_controller {
         if(!empty(self::$sendoptions['android_sound'])){
           $notification['sound'] = self::$sendoptions['android_sound'];
         }
+        if(!empty($device_token['badge'][0])){
+          $data['count'] = $device_token['badge'][0];
+        }
       }
       else{
         $data = array();
@@ -1951,6 +1971,11 @@ class smpush_sendpush extends smpush_controller {
         }
         if(!empty(self::$sendoptions['android_sound'])){
           $data['sound'] = self::$sendoptions['android_sound'];
+        }
+        if(!empty(self::$sendoptions['desktop_icon'])){
+          $data['style'] = 'picture';
+          $data['picture'] = self::$sendoptions['desktop_icon'];
+          $data['summaryText'] = $message;
         }
       }
       if (!empty(self::$sendoptions['and_extravalue'])) {

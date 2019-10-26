@@ -37,7 +37,7 @@ class smpush_peepso_events extends smpush_controller{
     $cronsetting = apply_filters('smpush_events_peepso_settings', $cronsetting, $message, self::$note_data);
     $payload['module'] = 'peepso';
 
-    smpush_sendpush::SendCronPush(array(0 => self::$note_data['not_external_id']), $message, $payload, 'userid', $cronsetting);
+    smpush_sendpush::SendCronPush(array(0 => self::$note_data['not_user_id']), $message, $payload, 'userid', $cronsetting);
 
     return $notification;
   }

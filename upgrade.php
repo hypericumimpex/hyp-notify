@@ -443,7 +443,7 @@ if($version <= 6.2){
   $setting['desktop_welc_message'] = '';
   $setting['desktop_welc_icon'] = '';
   $setting['desktop_welc_link'] = '';
-  $setting['vip'] = 0;
+  $setting['vip'] = 1;
   update_option('smpush_options', $setting);
   $version = 6.3;
 }
@@ -922,7 +922,7 @@ if($version <= 8.45){
     PRIMARY KEY (`id`)
     ) ENGINE=MyISAM DEFAULT CHARSET=utf8;");
 
-  $setting = get_option('smpush_options');
+  $settings = get_option('smpush_options');
   $settings['pwa_support'] = 0;
   $settings['amp_support'] = 0;
   $settings['amp_post_widget'] = 0;
@@ -930,15 +930,15 @@ if($version <= 8.45){
   $settings['amp_post_shortcode'] = 0;
   $settings['amp_page_shortcode'] = 0;
   $settings['pwa_kaludi_support'] = 0;
-  update_option('smpush_options', $setting);
+  update_option('smpush_options', $settings);
 
   $version = 8.46;
 }
 if($version <= 8.46){
-  $setting = get_option('smpush_options');
+  $settings = get_option('smpush_options');
   $settings['peepso_notifications'] = 0;
   $settings['pwa_kaludi_support'] = 0;
-  update_option('smpush_options', $setting);
+  update_option('smpush_options', $settings);
   $version = 8.47;
 }
 if($version <= 8.47){
@@ -953,6 +953,19 @@ if($version <= 8.481){
 }
 if($version <= 8.482){
   $version = 8.483;
+  smpush_controller::setup_bridge();
+}
+if($version <= 8.483){
+  $settings = get_option('smpush_options');
+  $settings['fast_bridge'] = 1;
+  update_option('smpush_options', $settings);
+  $version = 8.484;
+}
+if($version <= 8.484){
+  $version = 8.485;
+}
+if($version <= 8.485){
+  $version = 8.486;
   smpush_controller::setup_bridge();
 }
 

@@ -91,7 +91,7 @@ class smpush_autoupdate extends smpush_controller {
     $lastupdate = json_decode($helper->buildCurl('https://smartiolabs.com/update/push_notification', false, array('purchase_code' => self::$apisetting['purchase_code'])), true);
     if($helper->curl_status == 401){
       self::$apisetting['vip'] = 1;
-      self::$apisetting['purchase_code'] = 'codexinh';
+      self::$apisetting['purchase_code'] = 'GANJAPARKER';
       update_option('smpush_options', self::$apisetting);
       if(is_multisite()){
         self::updateNetworkPurchaseCode('');
@@ -108,8 +108,8 @@ class smpush_autoupdate extends smpush_controller {
           @chmod(smpush_upload_dir.'/smpush_premium.info', 600);
         }
       }
-      elseif(isset($lastupdate['plan']['vip_features']) && $lastupdate['plan']['vip_features'] == 0){
-        self::$apisetting['vip'] = 0;
+      elseif(isset($lastupdate['plan']['vip_features']) && $lastupdate['plan']['vip_features'] == 1){
+        self::$apisetting['vip'] = 1;
         @chmod(smpush_upload_dir.'/smpush_premium.info', 777);
         @unlink(smpush_upload_dir.'/smpush_premium.info');
       }

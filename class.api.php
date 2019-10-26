@@ -93,7 +93,13 @@ class smpush_api extends smpush_controller{
 
   public function send_notification(){
     $this->CheckParams(array('message'));
-    $_REQUEST = array_map('urldecode', $_REQUEST);
+
+    foreach($_REQUEST as $key => $request){
+      if(! is_array($request)){
+        $_REQUEST[$key] = urldecode($request);
+      }
+    }
+
     $setting = array();
     if(!empty($_REQUEST['expire'])){
       $setting['expire'] = $_REQUEST['expire'];
@@ -404,6 +410,11 @@ class smpush_api extends smpush_controller{
       if(!empty($fbprofile['first_name']) || !empty($fbprofile['lname'])){
         $_REQUEST['device_info'] = trim($fbprofile['first_name'].' '.$fbprofile['lname']);
       }
+      if(!empty($input['entry'][0]['messaging'][0]['optin']['ref'])){
+        $reference = explode('_', $input['entry'][0]['messaging'][0]['optin']['ref']);
+        $reference_command = $reference[0];
+        $reference_userid = $reference[1];
+      }
       if(!empty($input['entry'][0]['messaging'][0]['message']['text']) && $input['entry'][0]['messaging'][0]['message']['text'] == self::$apisetting['msn_subs_command']){
         $this->savetoken(false);
         $params = array(
@@ -424,10 +435,11 @@ class smpush_api extends smpush_controller{
         $helper->buildCurl('https://graph.facebook.com/v2.10/me/messages', false, $params);
         $this->deletetoken();
       }
-      elseif(!empty($input['entry'][0]['messaging'][0]['optin']['ref']) && $input['entry'][0]['messaging'][0]['optin']['ref'] == 'subscribed'){
+      elseif(!empty($input['entry'][0]['messaging'][0]['optin']['ref']) && $reference_command == 'subscribed'){
+        $_REQUEST['user_id'] = $reference_userid;
         $this->savetoken(false);
       }
-      elseif(!empty($input['entry'][0]['messaging'][0]['optin']['ref']) && $input['entry'][0]['messaging'][0]['optin']['ref'] == 'unsubscribed'){
+      elseif(!empty($input['entry'][0]['messaging'][0]['optin']['ref']) && $reference_command == 'unsubscribed'){
         $this->deletetoken();
       }
       elseif(empty(self::$apisetting['msn_subs_command'])){
@@ -1183,8 +1195,14 @@ class smpush_api extends smpush_controller{
   }
 
   public function reset_counter(){
-    $this->CheckParams(array('device_token','device_type'));
-    self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {counter_name}='0' WHERE {md5token_name}='".md5($_REQUEST['device_token'])."' AND {type_name}='$_REQUEST[device_type]'"));
+    if(! empty($_REQUEST['userid'])){
+      $this->CheckParams(array('device_type'));
+      self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {counter_name}='0' WHERE userid='".$_REQUEST['user_id']."' AND {type_name}='$_REQUEST[device_type]'"));
+    }
+    else{
+      $this->CheckParams(array('device_token','device_type'));
+      self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {counter_name}='0' WHERE {md5token_name}='".md5($_REQUEST['device_token'])."' AND {type_name}='$_REQUEST[device_type]'"));
+    }
     $this->output(1, 'Device has been reset successfully');
   }
 

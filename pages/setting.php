@@ -563,14 +563,14 @@
                       <td>
                         <select name="desktop_request_type" class="smpushReuqestTypePicker_DISABLED">
                           <option value="native"><?php echo __('Native Opt-in', 'smpush-plugin-lang')?></option>
-                          <option value="subs_page"><?php echo __('Subscription Page', 'smpush-plugin-lang')?></option>
+                          <option value="subs_page" <?php if (self::$apisetting['desktop_request_type'] == 'subs_page'):?>selected="selected"<?php endif;?>><?php echo __('Subscription Page', 'smpush-plugin-lang')?></option>
                           <option value="popup" <?php if (self::$apisetting['desktop_request_type'] == 'popup'):?>selected="selected"<?php endif;?>><?php echo __('Popup Box', 'smpush-plugin-lang')?></option>
                           <option value="icon" <?php if (self::$apisetting['desktop_request_type'] == 'icon'):?>selected="selected"<?php endif;?>><?php echo __('Icon', 'smpush-plugin-lang')?></option>
                         </select>
                       </td>
                     </tr>
                     <tr valign="top">
-                      <th class="first"><?php echo __('Customize Popup', 'smpush-plugin-lang')?></th>
+                      <th class="first smpush_table_head" colspan="2"><?php echo __('Customize Popup', 'smpush-plugin-lang')?></th>
                     </tr>
                     <tr valign="top" class="smpush-popup-settings" <?php if(self::$apisetting['desktop_request_type'] != 'popup'):?>style="display:"<?php endif;?>>
                       <td class="first"><?php echo __('Layout', 'smpush-plugin-lang')?></td>
@@ -582,6 +582,7 @@
                           <option value="fancy" <?php if (self::$apisetting['desktop_popup_layout'] == 'fancy'):?>selected="selected"<?php endif;?>><?php echo __('Fancy Layout', 'smpush-plugin-lang')?></option>
                           <option value="dark" <?php if (self::$apisetting['desktop_popup_layout'] == 'dark'):?>selected="selected"<?php endif;?>><?php echo __('Dark', 'smpush-plugin-lang')?></option>
                           <option value="ocean" <?php if (self::$apisetting['desktop_popup_layout'] == 'ocean'):?>selected="selected"<?php endif;?>><?php echo __('Light Ocean', 'smpush-plugin-lang')?></option>
+                          <option value="news" <?php if (self::$apisetting['desktop_popup_layout'] == 'news'):?>selected="selected"<?php endif;?>><?php echo __('News Look', 'smpush-plugin-lang')?></option>
                         </select>
                       </td>
                     </tr>
@@ -643,7 +644,7 @@
                       </td>
                     </tr>
                     <tr valign="top">
-                      <th class="first"><?php echo __('Customize Icon', 'smpush-plugin-lang')?></th>
+                      <th class="first smpush_table_head" colspan="2"><?php echo __('Customize Icon', 'smpush-plugin-lang')?></th>
                     </tr>
                     <tr valign="top" class="smpush-icon-settings" <?php if(self::$apisetting['desktop_request_type'] != 'icon'):?>style="display:"<?php endif;?>>
                       <td class="first"><?php echo __('Position', 'smpush-plugin-lang')?></td>
@@ -677,7 +678,7 @@
                       </td>
                     </tr>
                     <tr valign="top">
-                      <th class="first"><?php echo __('Additional Customization', 'smpush-plugin-lang')?></th>
+                      <th class="first smpush_table_head" colspan="2"><?php echo __('Additional Customization', 'smpush-plugin-lang')?></th>
                     </tr>
                     <tr valign="top">
                       <td class="first"><?php echo __('Custom CSS', 'smpush-plugin-lang')?></td>

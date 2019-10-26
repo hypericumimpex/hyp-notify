@@ -24,17 +24,24 @@ class smpush_bridge extends smpush_helper {
   
   public function __construct($include_path){
     parent::__construct();
+    @set_time_limit(300);
+    @ini_set('max_execution_time', 300);
+    @ini_set('display_errors', 1);
+    @ini_set('error_reporting', E_ALL & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED);
+
     if($include_path == '.'){
       $wp_config = $this->readlocalfile('../../../wp-config.php');
     }
-    else{
+    elseif(file_exists('./wp-config.php')){
       $wp_config = $this->readlocalfile('./wp-config.php');
     }
+    elseif(file_exists('./../wp-config.php')){
+      $wp_config = $this->readlocalfile('./../wp-config.php');
+    }
     $this->include_path = $include_path;
-    $wp_config = str_replace('*/', "*/\n", $wp_config);
+
     $wp_config = $this->strip_comments($wp_config);
-    $wp_config = preg_replace('/(require|include_once)([^;]*);/i', '', $wp_config);
-    $wp_config = str_replace(array('<?php','?>'), '', $wp_config);
+    $wp_config = $this->format_code($wp_config);
     eval($wp_config);
 
     require($include_path.'/lib/db/ez_sql_core.php');
@@ -77,6 +84,24 @@ class smpush_bridge extends smpush_helper {
     }
 
     $this->ParseOutput = true;
+  }
+
+  private function format_code($source) {
+    $phpcode = '';
+    preg_match_all('/define([\s]+)?\(([\s]+)?(\'|")DB_(.*)([\s]+)?\)([\s]+)?;/', $source, $matches);
+    if(!empty($matches)){
+      foreach($matches[0] as $match){
+        $phpcode .= $match."\n";
+      }
+    }
+    unset($matches);
+    preg_match_all('/\$table_prefix(.*);/', $source, $matches);
+    if(!empty($matches)){
+      foreach($matches[0] as $match){
+        $phpcode .= $match."\n";
+      }
+    }
+    return $phpcode;
   }
 
   private function strip_comments($source) {

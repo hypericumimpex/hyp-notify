@@ -218,15 +218,15 @@ class smpush_helper {
     $json = array();
   	if(is_array($result)){
   		$json['respond'] = $respond;
-        $json['paging'] = self::$paging;
-        $json['message'] = '';
-        $json['result'] = $result;
+      $json['paging'] = self::$paging;
+      $json['message'] = '';
+      $json['result'] = $result;
   	}
   	else{
   		$json['respond'] = $respond;
-        $json['paging'] = self::$paging;
+      $json['paging'] = self::$paging;
   		$json['message'] = $result;
-        $json['result'] = array();
+      $json['result'] = array();
   	}
     if(self::$returnValue == 'cronjob'){
       if($respond == 0){
