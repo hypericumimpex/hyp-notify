@@ -296,3 +296,4 @@ function smiopush_bb_expiration_rememberme(){
 
 function smiopush_expiration_filter($seconds, $user_id, $remember){
   return 15552000;
+}
