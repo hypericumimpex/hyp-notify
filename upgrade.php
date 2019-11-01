@@ -4,6 +4,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 require_once(ABSPATH.'wp-admin/includes/upgrade.php');
 
+@set_time_limit(0);
+
 global $wpdb;
 $wpdb->hide_errors();
 
@@ -967,6 +969,40 @@ if($version <= 8.484){
 if($version <= 8.485){
   $version = 8.486;
   smpush_controller::setup_bridge();
+}
+if($version <= 8.486){
+  $settings = get_option('smpush_options');
+  $settings['subspage_rating'] = 0;
+  $settings['pwaforwp_support'] = 0;
+  update_option('smpush_options', $settings);
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_subscriptions` ADD `temp` SMALLINT UNSIGNED NOT NULL AFTER `radius`;');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_history` ADD `postid` INT UNSIGNED NOT NULL AFTER `msgid`;');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_desktop_messages` ADD INDEX( `token`, `type`), ADD INDEX(`timepost`);');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_events` ADD INDEX( `event_type`, `post_type`, `status`);');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_events_queue` ADD INDEX(`post_id`);');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_history` ADD INDEX( `userid`, `platform`), ADD INDEX(`postid`);');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_relation` ADD INDEX(`token_id`), ADD INDEX(`userid`);');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_statistics` ADD INDEX( `date`, `platid`, `msgid`, `action`);');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_events` ADD `once_notify` BOOLEAN NOT NULL AFTER `subs_filter`;');
+  $version = 8.487;
+}
+if($version <= 8.487){
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'sm_push_tokens` ADD `firebase` BOOLEAN NOT NULL AFTER `counter`, ADD INDEX(`firebase`);');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_queue` ADD `firebase` BOOLEAN NOT NULL AFTER `feedback`;');
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_cron_queue` ADD `firebase` BOOLEAN NOT NULL AFTER `timepost`;');
+
+  $wpdb->query('ALTER TABLE `'.$wpdb->prefix.'push_connection` ADD `firebase_name` CHAR(20) NOT NULL AFTER `counter_name`;');
+  $wpdb->update($wpdb->prefix.'push_connection', array('firebase_name' => 'firebase'), array('tbname' => '{wp_prefix}sm_push_tokens'));
+  $wpdb->update($wpdb->prefix.'push_connection', array('firebase_name' => 'firebase'), array('id' => 1));
+
+  $settings = get_option('smpush_options');
+  $settings['desktop_used_webpush'] = $settings['desktop_webpush'];
+  $settings['desktop_webpush'] = 1;
+  $settings['firebase_auth_file'] = '';
+  $settings['firebase_config'] = '';
+  update_option('smpush_options', $settings);
+
+  $version = 9;
 }
 
 delete_transient('smpush_update_notice');

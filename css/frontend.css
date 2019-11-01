@@ -44,8 +44,8 @@
 	margin-bottom:5px;
 	font-family: "Open Sans", Arial, sans-serif;
 }
-#smpush_notification_header button, #smpush_notification_footer .smpushBox button{
-	margin:0;padding:0;border:0;
+#smpush_notification_header button, #smpush_notification_footer .smpushBox button, #smpush_notification_temp{
+	margin:0;
 	height: 40px;
     font-size: 13px;
     color: #666;
@@ -69,6 +69,29 @@
     line-height: 34px;
     white-space: nowrap;
 }
+#smpush_notification_temp{padding: 0!important;height: 50px!important}
+#smpush_notification_temp label {
+  font-size: 21px;
+  cursor: pointer;
+  text-align: center;
+  display: table-cell;
+  border-right: 1px solid #ddd;
+  width: 56px;
+  background-image: url(../images/bonfire.svg);
+  background-repeat: no-repeat;
+  height: 48px;
+  background-position: center;
+  vertical-align: inherit;
+  line-height: 49px;
+}
+#smpush_notification_temp label:first-child{background-image:none}
+#smpush_notification_temp label:nth-child(2){background-size: 24px;}
+#smpush_notification_temp label:nth-child(3){background-size: 30px;}
+#smpush_notification_temp label:nth-child(4){background-size: 36px;}
+#smpush_notification_temp label:last-child{border-right:0}
+#smpush_notification_temp input{display: none}
+#smpush_notification_temp label.smpush_checked{background-color: #ffb613}
+#smpush_temp_screen{font-size: 18px;font-weight: 300}
 #smpush_receive_on button{padding: 0 10px 0 0;}
 #smpush_receive_on button img{
 	display: inline-block!important;margin:0;padding:0;border:0;box-shadow:none;border-radius:0;
@@ -87,14 +110,14 @@
     padding: 20px;
 }
 #smpush_notification_footer .smpushBox{
-	display: inline-block;
+	display: inline-table;
 	text-align: center;
     border: 1px solid #ddd;
     padding: 20px;
     margin: 0 10px 10px 0;
     border-radius: 3px;
     font-size: 0;
-    width: 19%;
+    width: 31%;
     min-width: 173px;
     cursor: pointer;
 }
@@ -140,7 +163,7 @@
 	color:#000;
     margin-bottom: 10px;
 }
-#smpush_subscription_form{display:block!important}
+#smpush_subscription_form{display:block!important;max-width: 100%;}
 #smpush_agreement_hint{}
 #smpush_div_button{
 	padding-top: 15px;

@@ -42,6 +42,24 @@
   </select>
   <?php endif;?>
   
+  <?php if(self::$apisetting['subspage_rating'] == 1):?>
+  <h3><?php echo __('Minimum Temperature', 'smpush-plugin-lang')?> <span id="smpush_temp_screen"><?php if(!empty($subscription['temp'])):?>(<?php echo $subscription['temp'] ?>&#176;)<?php endif;?></span></h3>
+    <button id="smpush_notification_temp" type="button">
+      <label <?php if($subscription['temp'] == 0):?>class="smpush_checked"<?php endif;?>>
+        <input type="radio" name="temp" value="0" <?php if($subscription['temp'] == 0):?>checked="checked"<?php endif;?> /> 0&#176;
+      </label>
+      <label <?php if($subscription['temp'] == 20):?>class="smpush_checked"<?php endif;?>>
+        <input type="radio" name="temp" value="20" <?php if($subscription['temp'] == 20):?>checked="checked"<?php endif;?> />
+      </label>
+      <label <?php if($subscription['temp'] == 40):?>class="smpush_checked"<?php endif;?>>
+        <input type="radio" name="temp" value="40" <?php if($subscription['temp'] == 40):?>checked="checked"<?php endif;?> />
+      </label>
+      <label <?php if($subscription['temp'] == 60):?>class="smpush_checked"<?php endif;?>>
+        <input type="radio" name="temp" value="60" <?php if($subscription['temp'] == 60):?>checked="checked"<?php endif;?> />
+      </label>
+    </button>
+  <?php endif;?>
+
   <h3><?php echo __('Receive On', 'smpush-plugin-lang')?></h3>
   <div id="smpush_receive_on">
     <?php if(self::$apisetting['subspage_plat_web'] == 1):?>
@@ -137,21 +155,21 @@ window.onload = function() {
     }
     jQuery(".smpush_install_instructions").hide();
     jQuery("#smpush_web_instructions").show();
-    jQuery(this).find('input[name="web"]').trigger("click");
+    //jQuery(this).find('input[name="web"]').trigger("click");
   });
   jQuery('#smpush_notification_header button').has('input[name="mobile"]').click(function() {
     jQuery(".smpush_install_instructions").hide();
     jQuery("#smpush_mobile_instructions").show();
-    jQuery(this).find('input[name="mobile"]').trigger("click");
+    //jQuery(this).find('input[name="mobile"]').trigger("click");
   });
   jQuery('#smpush_notification_header button').has('input[name="msn"]').click(function() {
     jQuery(".smpush_install_instructions").hide();
     jQuery("#smpush_msn_instructions").show();
-    jQuery(this).find('input[name="msn"]').trigger("click");
+    //jQuery(this).find('input[name="msn"]').trigger("click");
   });
   jQuery('#smpush_notification_header button').has('input[name="email"]').click(function() {
     jQuery(".smpush_install_instructions").hide();
-    jQuery(this).find('input[name="email"]').trigger("click");
+    //jQuery(this).find('input[name="email"]').trigger("click");
   });
   jQuery("#smpush_web_instructions").show();
   

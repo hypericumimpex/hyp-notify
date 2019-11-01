@@ -82,7 +82,7 @@ var smpushCheckRemotePermission = function (permissionData) {
     else{
       if(smpush_getCookie("smpush_safari_device_token") == ""){
         smpush_setCookie("smpush_safari_device_token", permissionData.deviceToken, 365);
-        smpush_endpoint_subscribe(permissionData.deviceToken);
+        smpush_endpoint_subscribe(permissionData.deviceToken, "");
       }
       else{
         smpushDestroyReqWindow(false);
@@ -149,37 +149,28 @@ var devicetype = smpush_browser();
 var settings = JSON.parse(\''.$options.'\');
 smpush_debug(devicetype);
 
-function smpush_debug(object) {
+function smpush_debug(error, object) {
   if('.self::$apisetting['desktop_debug'].' == 1){
-    console.log(object);
+    if(typeof object !== "undefined"){
+      console.log(error, object);
+    } else {
+      console.log(error);
+    }
+    
   }
 }
 
-function smpushUrlB64ToUint8Array(base64String) {
-  const padding = "=".repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, "+")
-    .replace(/_/g, "/");
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
-}
-
-function smpush_endpoint_subscribe(subscriptionId) {
+function smpush_endpoint_subscribe(subscriptionId, oldToken) {
   if(subscriptionId == ""){
     return false;
   }
   smpush_setCookie("smpush_desktop_request", "true", 365);
-  smpush_setCookie("smpush_device_token", subscriptionId, 365);
+  smpush_setCookie("smpush_device_token", subscriptionId, 60);
   
   var data = {};
   data["device_token"] = subscriptionId;
   data["device_type"] = devicetype;
+  data["firebase"] = 1;
   data["active"] = 1;
   data["latitude"] = (smpush_getCookie("smart_push_smio_coords_latitude") != "")? smpush_getCookie("smart_push_smio_coords_latitude") : "";
   data["longitude"] = (smpush_getCookie("smart_push_smio_coords_longitude") != "")? smpush_getCookie("smart_push_smio_coords_longitude") : "";
@@ -193,6 +184,10 @@ function smpush_endpoint_subscribe(subscriptionId) {
   if(jQuery(".smpush-push-subscriptions-button").length > 0 && jQuery("#smpush_subscription_form").length == 0){
     var apiService = "channels_subscribe";
     data["channels_id"] = subsChannels;
+  }
+  else if(oldToken && oldToken != ""){
+    var apiService = "refresh_token";
+    data["device_old_token"] = oldToken;
   }
   else{
     var apiService = "savetoken";
@@ -222,7 +217,7 @@ function smpush_endpoint_unsubscribe(subscriptionId) {
   jQuery.ajax({
     method: "POST",
     url: "'.rtrim(get_bloginfo('wpurl'), '/') .'/?smpushcontrol=deletetoken",
-    data: { device_token: subscriptionId, device_type: devicetype}
+    data: { device_token: subscriptionId, device_type: devicetype, firebase: 1}
   })
   .done(function( msg ) {
     smpush_debug("Data Sent");
@@ -289,22 +284,16 @@ function smpush_bootstrap_init(){
     if('.self::$apisetting['desktop_gps_status'].' == 1){
       smpushUpdateGPS();
     }
-    var pushButton = jQuery(".smpush-push-permission-button");
-    smpush_isPushEnabled = true;
-    pushButton.html("'.addslashes(self::$apisetting['desktop_btn_unsubs_text']).'");
-    jQuery("#smpushIconRequest").tooltipster("content","'.addslashes(self::$apisetting['desktop_icon_unsubs_text']).'");
-    pushButton.removeAttr("disabled");
-    jQuery(".smpush-push-subscriptions-button").removeAttr("disabled");
-    jQuery(".smpush-push-subscriptions-button").click(function() {
-      smpush_endpoint_subscribe(smpush_getCookie("smpush_device_token"));
-    });
-    pushButton.click(function() {
-      smpush_endpoint_unsubscribe(smpush_getCookie("smpush_device_token"));
-      jQuery(".smpush-push-permission-button").remove();
-      jQuery(".smpush-push-subscriptions-button").remove();
-    });
   }
-  smpushDrawReqIcon();
+  
+  setTimeout(function(){
+    smpushDrawReqIcon();
+    if ("safari" in window) {
+      smpushSafari();
+    } else {
+      smpushGeko();
+    }
+  }, '.(self::$apisetting['desktop_delay']*1000).');
 }
 
 function smpushUpdateGPS(){
@@ -319,7 +308,7 @@ function smpushUpdateGPS(){
       smpush_setCookie("smart_push_smio_coords_latitude", startPos.coords.latitude, (1/24));
       smpush_setCookie("smart_push_smio_coords_longitude", startPos.coords.longitude, (1/24));
       
-      smpush_endpoint_subscribe(smpush_getCookie("smpush_device_token"));
+      smpush_endpoint_subscribe(smpush_getCookie("smpush_device_token"), "");
     };
     var geoError = function(error) {
       smpush_debug("Error occurred. Error code: " + error.code);
@@ -388,6 +377,7 @@ function smpushIntializePopupBox(){
   jQuery("body").append(\''.self::buildPopupLayout().'\');
   document.getElementById("smart_push_smio_overlay").style.opacity = "'.((empty(self::$apisetting['desktop_paytoread_darkness']))? 0.8:(self::$apisetting['desktop_paytoread_darkness']/10) ).'";
   document.getElementById("smart_push_smio_window").style.position = "fixed";
+  
   if("'.self::$apisetting['black_overlay'].'" == "1"){
     document.getElementById("smart_push_smio_overlay").style.display = "block";
   }
@@ -433,12 +423,6 @@ function smpushDrawReqWindow(){
     }
     jQuery("body").append("<button class=\"smpush-push-permission-button\" style=\"display:none\" disabled>'.addslashes(self::$apisetting['desktop_btn_subs_text']).'</button>");
   }
-  
-  if ("safari" in window) {
-      smpushSafari();
-  } else {
-      smpushGeko();
-  }
 }
 
 function smpushDrawReqIcon(){
@@ -455,20 +439,13 @@ function smpushDrawReqIcon(){
   if("'.self::$apisetting['desktop_paytoread'].'" == "1"){
     jQuery("body").append(\'<div id="smart_push_smio_overlay" tabindex="-1" style="opacity:'.((empty(self::$apisetting['desktop_paytoread_darkness']))? 0.8:(self::$apisetting['desktop_paytoread_darkness']/10) ).'; display: block;ms-filter:progid:DXImageTransform.Microsoft.Alpha(Opacity=40); background-color:#000; position: fixed; left: 0; right: 0; top: 0; bottom: 0; z-index: 10000;"></div>\');
   }
-  jQuery("body").append("<style>#smpushIconRequest{display: block;position: fixed;width: 50px;height: 50px;background-image: url('.((!empty(self::$apisetting['desktop_iconimage']))? self::$apisetting['desktop_iconimage'] : smpush_imgpath.'/alert.png').');background-repeat: no-repeat;background-position: center;background-size: 40px 40px;text-indent: -9999px;padding: 0;margin: 0;border: 0;z-index: 999999999;border-radius: 50px;-webkit-border-radius: 50px;-moz-border-radius: 50px;-webkit-box-shadow: 7px 3px 16px 0px rgba(50, 50, 50, 0.2);-moz-box-shadow:    7px 3px 16px 0px rgba(50, 50, 50, 0.2);box-shadow:7px 3px 16px 0px rgba(50, 50, 50, 0.2);}</style>");
+  jQuery("body").append("<style>#smpushIconRequest{display: block;position: fixed;width: 48px;height: 48px;background-image: url('.((!empty(self::$apisetting['desktop_iconimage']))? self::$apisetting['desktop_iconimage'] : smpush_imgpath.'/alert.png').');background-repeat: no-repeat;background-position: center;background-size: 48px 48px;text-indent: -9999px;padding: 0;margin: 0;border: 0;z-index: 999999999;border-radius: 50px;-webkit-border-radius: 50px;-moz-border-radius: 50px;-webkit-box-shadow: 7px 3px 16px 0px rgba(50, 50, 50, 0.2);-moz-box-shadow:    7px 3px 16px 0px rgba(50, 50, 50, 0.2);box-shadow:7px 3px 16px 0px rgba(50, 50, 50, 0.2);}</style>");
   smpushTooltip();
-  if(smpush_getCookie("smpush_desktop_request") == "true"){
-    if ("safari" in window) {
-      smpushSafari();
-    } else {
-        smpushGeko();
-    }
-  }
 }
 
 function smpush_link_user_cookies() {
   if(smpush_getCookie("smpush_fresh_linked_user") != "" && smpush_getCookie("smpush_linked_user") == "" && smpush_getCookie("smpush_device_token") != ""){
-    smpush_endpoint_subscribe(smpush_getCookie("smpush_device_token"));
+    smpush_endpoint_subscribe(smpush_getCookie("smpush_device_token"), "");
     smpush_setCookie("smpush_linked_user", "true", 15);
     smpush_setCookie("smpush_fresh_linked_user", "", -1);
   }
@@ -505,22 +482,6 @@ function smpushWelcomeMSG(){
         data: {target: "'.addslashes(self::$apisetting['desktop_welc_link']).'"},
         requireInteraction: true
       });
-    });
-    self.addEventListener("notificationclick", function (event) {
-      event.notification.close();
-      event.waitUntil(clients.matchAll({
-        type: "window"
-      }).then(function (clientList) {
-        for (var i = 0; i < clientList.length; i++) {
-          var client = clientList[i];
-          if (client.url === event.notification.tag && "focus" in client) {
-            return client.focus();
-          }
-        }
-        if (clients.openWindow) {
-          return clients.openWindow(event.notification.tag);
-        }
-      }));
     });
   }
 }
@@ -582,77 +543,36 @@ function openFBpopup(url, elm){
       $sw_link = rtrim(get_bloginfo('wpurl'), '/').'/?smpushprofile=service_worker&version='.self::$apisetting['settings_version'];
     }
     $output = '
-if(("'.self::$apisetting['pwa_support'].'" == "0" || "'.((function_exists('superpwa_add_gcm_sender_id'))? 1 : 0).'" == 0 ) && ("'.self::$apisetting['desktop_webpush'].'" == "0" || "'.self::$apisetting['desktop_webpush_old'].'" == "1")){
+"use strict";
+if(("'.self::$apisetting['pwa_support'].'" == "0" || "'.((function_exists('superpwa_add_gcm_sender_id'))? 1 : 0).'" == 0 )
+ && ("'.self::$apisetting['pwaforwp_support'].'" == "0" || "'.((function_exists('pwaforwp_site_url'))? 1 : 0).'" == 0 )
+ && ("'.self::$apisetting['desktop_webpush'].'" == "0" || "'.self::$apisetting['desktop_webpush_old'].'" == "1")){
   window.addEventListener("load", function() {
     smpush_debug("manifest registered successfully");
     document.getElementsByTagName("HEAD")[0].insertAdjacentHTML("afterbegin", "<link rel=\"manifest\" href=\"'. $manifest_link .'\">");
   });
 }
 
-function smpush_endpointWorkaround(endpoint){
-	var device_id = "";
-	if(endpoint.indexOf("mozilla") > -1){
-        device_id = endpoint.split("/")[endpoint.split("/").length-1]; 
-    }
-	else if(endpoint.indexOf("send/") > -1){
-		device_id = endpoint.slice(endpoint.search("send/")+5);
-	}
-  else{
-    smpush_debug(endpoint);
-    smpush_debug("error while getting device_id from endpoint");
-    alert("error while getting device_id from endpoint");
-    window.close();
-  }
-  smpush_debug(device_id);
-	return device_id;
-}
-
-function smpush_sendSubscriptionToServer(subscription) {
-  if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "1"){
-    var subscriptionId = subscription;
-  }
-  else{
-    var subscriptionId = smpush_endpointWorkaround(subscription.endpoint);
-  }
-  smpush_debug(subscriptionId);
-  if(smpush_getCookie("smpush_device_token") == ""){
-    smpush_endpoint_subscribe(subscriptionId);
-  }
-  else{
-    smpushDestroyReqWindow(false);
-  }
+function smpush_sendSubscriptionToServer(subscriptionId, old_token) {
+  smpush_debug("sending to server...", subscriptionId);
+  smpush_endpoint_subscribe(subscriptionId, old_token);
 }
 
 function smpush_unsubscribe() {
   smpush_setCookie("smpush_desktop_request", "true", 10);
   var pushButton = jQuery(".smpush-push-permission-button");
   pushButton.attr("disabled","disabled");
-
-  navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
-    serviceWorkerRegistration.pushManager.getSubscription().then(
-      function(pushSubscription) {
-        if (!pushSubscription) {
-          smpush_isPushEnabled = false;
-          pushButton.removeAttr("disabled");
-          pushButton.html("'.addslashes(self::$apisetting['desktop_btn_subs_text']).'");
-          return;
-        }
-        
-        var subscriptionId = smpush_endpointWorkaround(pushSubscription.endpoint);
-        smpush_debug(subscriptionId);
-        smpush_endpoint_unsubscribe(subscriptionId);
-
-        pushSubscription.unsubscribe().then(function() {
-          pushButton.removeAttr("disabled");
-          pushButton.html("'.addslashes(self::$apisetting['desktop_btn_subs_text']).'");
-          smpush_isPushEnabled = false;
-        }).catch(function(e) {
-          smpush_debug("Unsubscription error: ", e);
-          pushButton.removeAttr("disabled");
-        });
-      }).catch(function(e) {
-        smpush_debug("Error thrown while unsubscribing from push messaging.", e);
-      });
+  
+  const messaging = firebase.messaging();
+  
+  messaging.getToken().then((currentToken) => {
+    messaging.deleteToken(currentToken);
+    smpush_endpoint_unsubscribe(currentToken);
+  }).catch(function(e) {
+    smpush_isPushEnabled = false;
+    pushButton.removeAttr("disabled");
+    pushButton.html("'.addslashes(self::$apisetting['desktop_btn_subs_text']).'");
+    return;
   });
 }
 
@@ -660,42 +580,65 @@ function smpush_subscribe() {
   var pushButton = jQuery(".smpush-push-permission-button");
   pushButton.attr("disabled","disabled");
   
-  if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "1"){
-    var applicationServerKey = smpushUrlB64ToUint8Array("'.addslashes(self::$apisetting['chrome_vapid_public']).'");
-    var subsConfig = { userVisibleOnly: true, applicationServerKey: applicationServerKey };
-  }
-  else{
-    var subsConfig = { userVisibleOnly: true };
-  }
-
+  var smpush_firebaseConfig = JSON.parse(\''.self::$apisetting['firebase_config'].'\');
+  firebase.initializeApp(smpush_firebaseConfig);
+  const messaging = firebase.messaging();
+    
   navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
-    serviceWorkerRegistration.pushManager.subscribe(subsConfig)
-      .then(function(subscription) {
-        smpush_isPushEnabled = true;
-        pushButton.html("'.addslashes(self::$apisetting['desktop_btn_unsubs_text']).'");
-        jQuery("#smpushIconRequest").tooltipster("content","'.addslashes(self::$apisetting['desktop_icon_unsubs_text']).'");
-        pushButton.removeAttr("disabled");
-        if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "1"){
-          let subscriptionData = JSON.parse(JSON.stringify(subscription));
-          let subscriptionServer = {"endpoint": subscriptionData.endpoint, "auth": subscriptionData.keys.auth, "p256dh": subscriptionData.keys.p256dh};
-          smpush_debug(subscriptionServer);
-          return smpush_sendSubscriptionToServer(btoa(JSON.stringify(subscriptionServer)));
+    messaging.useServiceWorker(serviceWorkerRegistration);
+    
+    messaging.requestPermission().then(function() {
+      smpush_debug("Notification permission granted.");
+      messaging.getToken().then((currentToken) => {
+        if (currentToken) {
+          smpush_debug("Token fetched.", currentToken);
+          smpush_isPushEnabled = true;
+          pushButton.html("'.addslashes(self::$apisetting['desktop_btn_unsubs_text']).'");
+          jQuery("#smpushIconRequest").tooltipster("content","'.addslashes(self::$apisetting['desktop_icon_unsubs_text']).'");
+          pushButton.removeAttr("disabled");
+          if(smpush_getCookie("smpush_device_token") != "" && smpush_getCookie("smpush_device_token") != currentToken){
+            smpush_sendSubscriptionToServer(currentToken, smpush_getCookie("smpush_device_token"));
+          } else if(smpush_getCookie("smpush_device_token") == "") {
+            smpush_sendSubscriptionToServer(currentToken, "");
+          }
+        } else {
+          smpush_debug("No Instance ID token available. Request permission to generate one.");
         }
-        else{
-          return smpush_sendSubscriptionToServer(subscription);
-        }
-      })
-      .catch(function(e) {
-        if (Notification.permission === "denied") {
+      }).catch((err) => {
+        smpush_debug("An error occurred while retrieving token. ", err);
+      });
+    }).catch(function(err) {
+      if (Notification.permission === "denied") {
+          smpush_isPushEnabled = false;
           smpushDrawNotifyPopup();
-          smpush_debug("Permission for Notifications was denied");
+          smpush_debug("Permission for Notifications is denied");
           pushButton.attr("disabled","disabled");
           smpush_endpoint_unsubscribe(smpush_getCookie("smpush_device_token"));
         } else {
-          smpush_debug(e);
+          smpush_debug(err);
         }
+    });
+    
+    messaging.onMessage((spayload) => {
+      smpush_debug("Message received. ", spayload);
+      let payload = spayload.notification;
+      if (typeof(payload.command) != "undefined" && payload.command != "") {
+        eval(payload.command);
+      }
+      serviceWorkerRegistration.showNotification(payload.title, payload);
+    });
+    
+    messaging.onTokenRefresh(() => {
+      messaging.getToken().then((refreshedToken) => {
+        smpush_debug("Token refreshed.", refreshedToken);
+        smpush_sendSubscriptionToServer(currentToken, smpush_getCookie("smpush_device_token"));
+      }).catch((err) => {
+        smpush_debug("Unable to retrieve refreshed token ", err);
       });
+    });
+    
   });
+  
 }
 
 function smpush_initialiseState() {
@@ -715,39 +658,49 @@ function smpush_initialiseState() {
     smpush_debug("Push messaging isn\'t supported.");
     return;
   }
+  
+  jQuery(".smpush-push-permission-button").removeAttr("disabled");
+  
+  if (Notification.permission === "granted") {
+    smpush_subscribe();
+  } else if (Notification.permission === "default" && "'.self::$apisetting['desktop_request_type'].'" == "native") {
+    smpush_subscribe();
+  }
 
-  navigator.serviceWorker.ready.then(function(serviceWorkerRegistration) {
-    serviceWorkerRegistration.pushManager.getSubscription()
-      .then(function(subscription) {
-        var pushButton = jQuery(".smpush-push-permission-button");
-        pushButton.removeAttr("disabled");
-
-        if (!subscription) {
-          if("'.self::$apisetting['desktop_request_type'].'" == "native"){
-            document.getElementsByClassName("smpush-push-permission-button")[0].click();
-          }
-          return;
-        }
-
-        pushButton.html("'.addslashes(self::$apisetting['desktop_btn_unsubs_text']).'");
-        jQuery("#smpushIconRequest").tooltipster("content","'.addslashes(self::$apisetting['desktop_icon_unsubs_text']).'");
-        smpush_isPushEnabled = true;
-        smpush_sendSubscriptionToServer(subscription);
-      })
-      .catch(function(err) {
-        smpush_debug("Error during getSubscription()", err);
-      });
-  });
 }
 
 function smpushGeko(){
+
+  self.addEventListener("notificationclick", function(event) {
+    smpush_debug("notificationclick. ", event);
+    if (typeof(event.notification.data.click) != "undefined" && event.notification.data.click != "") {
+      eval(event.notification.data.click);
+    }
+    if (typeof(event.action) != "undefined" && event.action != "") {
+      eval(event.notification.data.actions[event.action]);
+      return;
+    }
+    if(event.notification.data.target == ""){
+      return;
+    }
+    event.waitUntil(clients.matchAll({
+      type: "window"
+    }).then(function(clientList) {
+      for (let i = 0; i < clientList.length; i++) {
+        let client = clientList[i];
+        if (client.url === event.notification.data.target && "focus" in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(event.notification.data.target);
+      }
+    }));
+    event.notification.close();
+  });
+  
   if ("serviceWorker" in navigator) {
-    if("'.addslashes(self::$apisetting['desktop_webpush']).'" == "1" && "'.addslashes(self::$apisetting['desktop_webpush_old']).'" == "0"){
-      navigator.serviceWorker.register("'.rtrim(get_bloginfo('wpurl'), '/') .'/smart_push_sw.js").then(smpush_initialiseState).catch(function(error){ smpush_debug(error); });
-    }
-    else{
-      navigator.serviceWorker.register("'.$sw_link.'").then(smpush_initialiseState).catch(function(error){ smpush_debug(error); });
-    }
+    navigator.serviceWorker.register("'.rtrim(get_bloginfo('wpurl'), '/') .'/smart_firebase_sw.js").then(smpush_initialiseState).catch(function(error){ smpush_debug(error); });
   } else {
     smpush_debug("Service workers aren\'t supported in this browser.");
   }
@@ -756,9 +709,8 @@ function smpushGeko(){
     return false;
   }
   
-  var pushButton = jQuery(".smpush-push-permission-button");
-
-  pushButton.click(function() {
+  jQuery(".smpush-push-permission-button").click(function() {
+    smpush_debug("clicked.", smpush_isPushEnabled);
     if (smpush_isPushEnabled) {
       smpush_unsubscribe();
     } else {

@@ -127,6 +127,8 @@ class smpush_build_profile extends smpush_controller {
       wp_register_script('smpush-webpush-frontend', get_bloginfo('wpurl') .'/?smpushprofile=load_frontend_push_js&local='.self::$apisetting['last_change_time'], array('jquery'), SMPUSHVERSION);
     }
     wp_enqueue_script('smpush-webpush-frontend');
+    wp_enqueue_script('smpush-firebase-sdk', 'https://www.gstatic.com/firebasejs/7.2.2/firebase-app.js', array('jquery'), self::$apisetting['settings_version'], true);
+    wp_enqueue_script('smpush-firebase-messaging', 'https://www.gstatic.com/firebasejs/7.2.2/firebase-messaging.js', array('jquery'), self::$apisetting['settings_version'], true);
   }
 
   public static function service_worker($cache_only=false) {

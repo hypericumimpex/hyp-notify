@@ -2,12 +2,11 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-use Minishlink\WebPush\VAPID;
-
-class smpush_controller extends smpush_helper{
+class smpush_controller extends smpush_helper {
   public static $apisetting;
   public static $defconnection;
   public static $pushdb;
+  public static $firebase;
   public static $history;
   public static $data;
   public static $platforms = array('ios','iosfcm','android','wp','wp10','bb','chrome','safari','firefox','opera','samsung','fbmsn','fbnotify','email');
@@ -35,6 +34,8 @@ class smpush_controller extends smpush_helper{
       self::$pushdb = $wpdb;
     }
     self::$pushdb->hide_errors();
+
+    self::$firebase = new smpush_firebase(self::$apisetting);
   }
 
   public function set_def_connection(){
@@ -62,7 +63,7 @@ class smpush_controller extends smpush_helper{
     if(preg_match_all("/{([a-zA-Z0-9_]+)}/", $query, $matches)){
       foreach($matches[1] AS $match){
         if($match == 'ios_name' OR $match == 'iosfcm_name' OR $match == 'android_name' OR $match == 'wp_name' OR $match == 'wp10_name' OR $match == 'bb_name' OR $match == 'chrome_name' OR $match == 'safari_name' OR $match == 'firefox_name'
-           OR $match == 'opera_name' OR $match == 'samsung_name' OR $match == 'edge_name' OR $match == 'fbmsn_name' OR $match == 'fbnotify_name' OR $match == 'email_name' OR $match == 'counter_name')
+           OR $match == 'opera_name' OR $match == 'samsung_name' OR $match == 'edge_name' OR $match == 'fbmsn_name' OR $match == 'fbnotify_name' OR $match == 'email_name' OR $match == 'counter_name' OR $match == 'firebase_name')
           $query = str_replace('{'.$match.'}', self::$defconnection[$match] , $query);
         elseif($match == 'tbname_temp')
           $query = str_replace('{'.$match.'}', '`'.self::$defconnection['tbname'].'_temp'.'`' , $query);
@@ -256,6 +257,7 @@ class smpush_controller extends smpush_helper{
     'subspage_plat_msn',
     'subspage_plat_email',
     'subspage_show_catimages',
+    'subspage_rating',
     'msn_woo_checkout',
     'msn_woo_cartbtn',
     'subspage_matchone',
@@ -268,13 +270,12 @@ class smpush_controller extends smpush_helper{
     'e_woo_aband_last_rem',
     'android_msg_counter',
     'ios_msg_counter',
-    'desktop_webpush',
-    'desktop_webpush_old',
     'webpush_onesignal_payload',
     'no_disturb',
     'black_overlay',
     'desktop_welc_redir',
     'pwa_support',
+    'pwaforwp_support',
     'amp_support',
     'amp_post_widget',
     'amp_page_widget',
@@ -354,7 +355,16 @@ class smpush_controller extends smpush_helper{
         $newsetting['safari_certp12_path'] = addslashes($target_path);
       }
     }
-    
+    if(!empty($_FILES['firebase_auth_file_upload']['tmp_name'])){
+      $ext = strtolower(substr($_FILES['firebase_auth_file_upload']['name'], strrpos($_FILES['firebase_auth_file_upload']['name'], '.') + 1));
+      $target_path = $cert_upload_path.'/firebase_auth_file_'.time().'_'.$newsetting['def_connection'].'.'.$ext;
+      if(move_uploaded_file($_FILES['firebase_auth_file_upload']['tmp_name'], $target_path)){
+        unset(self::$apisetting['firebase_auth_file']);
+        $newsetting['firebase_auth_file'] = addslashes($target_path);
+        @chmod($target_path, 0600);
+      }
+    }
+
     if(!empty(self::$apisetting['safari_pack_path'])){
       @unlink($cert_upload_path.'/'.self::$apisetting['safari_pack_path']);
       unset(self::$apisetting['safari_pack_path']);
@@ -363,13 +373,6 @@ class smpush_controller extends smpush_helper{
     self::$apisetting = array_map('wp_slash', self::$apisetting);
     self::$apisetting = array_merge($newsetting, self::$apisetting);
 
-    if(!empty(self::$apisetting['desktop_webpush']) && empty(self::$apisetting['chrome_vapid_public'])){
-      require(smpush_dir.'/lib/web-push-php/vendor/autoload.php');
-      $vapkeys = VAPID::createVapidKeys();
-      self::$apisetting['chrome_vapid_public'] = $vapkeys['publicKey'];
-      self::$apisetting['chrome_vapid_private'] = $vapkeys['privateKey'];
-    }
-    
     /*if(self::$apisetting['msn_accesstoken'] != self::$apisetting['msn_oldaccesstoken']){
       $helper = new smpush_helper();
       $response = json_decode($helper->buildCurl('https://graph.facebook.com/v2.10/me/subscribed_apps?access_token='.self::$apisetting['msn_accesstoken'], false, true), true);
@@ -475,7 +478,7 @@ class smpush_controller extends smpush_helper{
       'display' => __('Once every 3 days')
     );
     $schedules['smpush_recurring_min'] = array(
-      'interval' => 900,
+      'interval' => 180,
       'display' => __('Every 15 minutes')
     );
     return $schedules;
@@ -547,8 +550,18 @@ class smpush_controller extends smpush_helper{
   }
   
   public static function license(){
-    return;
     echo '<div class="notice notice-error"><p>Some of `Push Notification System` plugin functions are disabled. Please enter your purchase code in the `Auto Update` page.</p></div>';
+  }
+
+  public static function vapid_warn(){
+    $can_show = get_option('smpush_dismiss_vapwarn');
+    if(empty($can_show)){
+      echo '<div class="notice notice-error"><p>Must update your VAPID keys at Firebase to continue sending your old subscribers. For how to <a href="https://youtu.be/2-yVATKeUKw" target="_blank">click here</a> | <a href="'.admin_url().'admin.php?page=smpush_tokens&dismiss_vap_warn=1">Dismiss</a></p></div>';
+    }
+  }
+
+  public static function firebase_warn(){
+    echo '<div class="notice notice-error"><p>Please complete Firebase configurations or plugin will not work properly to send out web push notifications.</p></div>';
   }
 
   public static function update_counters(){
@@ -612,6 +625,12 @@ class smpush_controller extends smpush_helper{
     if(empty(self::$apisetting['purchase_code'])){
       add_action('admin_notices', array('smpush_controller', 'license'));
     }
+    if(self::$apisetting['desktop_status'] == 1 && empty(self::$apisetting['firebase_config'])){
+      add_action('admin_notices', array('smpush_controller', 'firebase_warn'));
+    }
+    if(self::$apisetting['desktop_used_webpush'] == 1){
+      add_action('admin_notices', array('smpush_controller', 'vapid_warn'));
+    }
     if(smpush_env_demo){
       add_action('admin_notices', array('smpush_controller', 'demonote'));
       if(!empty($_GET['page']) && $_GET['page'] == 'smpush_autorss'){
@@ -644,6 +663,7 @@ class smpush_controller extends smpush_helper{
     @unlink(ABSPATH.'/smart_manifest.js');
     @unlink(ABSPATH.'/smart_service_worker.js');
     @unlink(ABSPATH.'/smart_push_sw.js');
+    @unlink(ABSPATH.'/smart_firebase_sw.js');
     @unlink(ABSPATH.'/smwp_amp_sw.js');
     @unlink(ABSPATH.'/smart_bridge.php');
     @unlink(smpush_dir.'/js/frontend_webpush.js');
@@ -665,10 +685,10 @@ class smpush_controller extends smpush_helper{
   
   public static function generateCaches(){
     if(self::$apisetting['desktop_status'] == 1){
-      if(self::$apisetting['desktop_webpush'] == 0 || self::$apisetting['desktop_webpush_old'] == 1){
+      //if(self::$apisetting['desktop_webpush'] == 0 || self::$apisetting['desktop_webpush_old'] == 1){
         smpush_build_profile::manifest(true);
         smpush_build_profile::service_worker(true);
-      }
+      //}
     }
   }
 
@@ -713,6 +733,18 @@ class smpush_controller extends smpush_helper{
           @rename(smpush_dir . '/smart_push_sw.js', ABSPATH . '/smart_push_sw.js');
         }
       }
+      if(!file_exists(ABSPATH . '/firebase_sw.js') || filesize(ABSPATH . '/smart_firebase_sw.js') == 0){
+        $firebase_config = json_decode(self::$apisetting['firebase_config'], true);
+        if(file_exists(smpush_dir . '/js/firebase_sw.js') && !empty($firebase_config)){
+          $swcontents = $this->readlocalfile(smpush_dir . '/js/firebase_sw.js');
+          $this->storelocalfile(smpush_dir . '/smart_firebase_sw.js', str_replace('{SENDER_ID}', $firebase_config['messagingSenderId'], $swcontents));
+          @rename(smpush_dir . '/smart_firebase_sw.js', ABSPATH . '/smart_firebase_sw.js');
+        }
+      }
+    }
+    if (self::$apisetting['pwaforwp_support'] == 1 && function_exists('pwaforwp_site_url')){
+      $pwa_for_wp = new smpush_support_pwaforwp(self::$apisetting);
+      $pwa_for_wp->sw_name_modify('null');
     }
   }
 
@@ -738,7 +770,7 @@ class smpush_controller extends smpush_helper{
     setcookie('smpush_fresh_linked_user', 'true', (time()+2592000), COOKIEPATH);
   }
   
-  public static function smtp_config(PHPMailer $mailer){
+  public function smtp_config(PHPMailer $mailer){
     if(self::$apisetting['smtp_status'] == 0){
       return;
     }

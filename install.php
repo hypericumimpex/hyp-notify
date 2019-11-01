@@ -14,7 +14,7 @@ if($myisamdb == 'NO'){
 }
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_archive` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `platforms` char(200) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `name` char(200) NOT NULL,
   `send_type` char(15) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
@@ -45,9 +45,9 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_archive_reports` (
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_data` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `sourceid` int(11) NOT NULL,
-  `campid` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `sourceid` int(11) UNSIGNED NOT NULL,
+  `campid` int(11) UNSIGNED NOT NULL,
   `subject` char(200) NOT NULL,
   `content` text NOT NULL,
   `link` text NOT NULL,
@@ -60,8 +60,8 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_data` (
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_sources` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `campid` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `campid` int(11) UNSIGNED NOT NULL,
   `title` char(150) NOT NULL,
   `link` text NOT NULL,
   `text_limit` int(11) NOT NULL,
@@ -69,7 +69,7 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_sources` (
   `read_status` tinyint(1) NOT NULL,
   `read_error` text NOT NULL,
   `lastupdate` int(10) UNSIGNED NOT NULL,
-  `data_counter` int(11) NOT NULL,
+  `data_counter` int(11) UNSIGNED NOT NULL,
   `active` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `lastupdate` (`lastupdate`,`active`)
@@ -77,19 +77,19 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_autorss_sources` (
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_channels` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` char(50) NOT NULL,
   `description` char(200) NOT NULL,
   `private` tinyint(1) NOT NULL,
   `default` tinyint(1) NOT NULL,
-  `count` int(11) NOT NULL,
+  `count` int(11) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   KEY `private` (`private`,`default`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_connection` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(100) NOT NULL,
   `description` varchar(200) NOT NULL,
   `dbtype` enum('localhost','remote') NOT NULL,
@@ -124,21 +124,23 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_connection` (
   `geotimeout_name` char(50) NOT NULL,
   `postdate` char(20) NOT NULL,
   `counter_name` char(20) NOT NULL,
+  `firebase_name` char(20) NOT NULL,
   `active_name` char(20) NOT NULL,
-  `counter` int(11) NOT NULL,
+  `counter` int(11) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_cron_queue` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `token_id` INT NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `token_id` INT UNSIGNED NOT NULL,
   `token` varchar(1000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `device_type` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `counter` smallint(6) UNSIGNED NOT NULL,
+  `counter` smallint(6) UNSIGNED UNSIGNED NOT NULL,
   `sendtime` int(10) UNSIGNED NOT NULL,
-  `sendoptions` int(11) NOT NULL,
+  `sendoptions` int(11) UNSIGNED NOT NULL,
   `timepost` timestamp NOT NULL DEFAULT current_timestamp(),
+  `firebase` BOOLEAN NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sendtime` (`sendtime`),
   KEY `device_type` (`device_type`),
@@ -147,15 +149,17 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_cron_queue` (
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_desktop_messages` (
-  `msgid` int(11) NOT NULL,
+  `msgid` int(11) UNSIGNED NOT NULL,
   `token` char(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `type` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `timepost` timestamp NOT NULL DEFAULT current_timestamp()
+  `timepost` timestamp NOT NULL DEFAULT current_timestamp(),
+  KEY `token` (`token`,`type`),
+  KEY `timepost` (`timepost`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_events` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` varchar(200) NOT NULL,
   `event_type` char(50) NOT NULL,
   `post_type` char(50) NOT NULL,
@@ -168,35 +172,37 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_events` (
   `userid_field` char(100) NOT NULL,
   `conditions` text NOT NULL,
   `subs_filter` char(10) NOT NULL,
+  `once_notify` BOOLEAN NOT NULL,
   `payload_fields` text NOT NULL,
-  `msg_template` int(11) NOT NULL,
+  `msg_template` int(11) UNSIGNED NOT NULL,
   `desktop_link` tinyint(1) NOT NULL,
   `email` tinyint(1) NOT NULL,
   `ignore` tinyint(1) NOT NULL,
   `status` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `status` (`status`)
+  KEY `event_type` ( `event_type`, `post_type`, `status`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_events_queue` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `post_id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `post_id` int(11) UNSIGNED NOT NULL,
   `old_status` varchar(50) NOT NULL,
   `new_status` varchar(50) NOT NULL,
   `post` mediumtext NOT NULL,
   `pushtime` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
-  KEY `pushtime` (`pushtime`)
+  KEY `pushtime` (`pushtime`),
+  KEY `post_id` (`post_id`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_feedback` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `tokens` longtext NOT NULL,
   `feedback` longtext NOT NULL,
   `device_type` char(15) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `msgid` int(11) NOT NULL,
+  `msgid` int(11) UNSIGNED NOT NULL,
   `timepost` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`id`),
   KEY `msgid` (`msgid`)
@@ -204,18 +210,20 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_feedback` (
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_history` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `msgid` int(11) NOT NULL,
-  `userid` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `msgid` int(11) UNSIGNED NOT NULL,
+  `userid` int(11) UNSIGNED NOT NULL,
   `platform` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `timepost` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `userid` (`userid`,`platform`),
+  KEY `postid` (`postid`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_templates` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `msgid` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `msgid` int(11) UNSIGNED NOT NULL,
   `title` varchar(150) NOT NULL,
   `template` text NOT NULL,
   `static` tinyint(1) NOT NULL,
@@ -226,10 +234,10 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_templates` 
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_views` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `msgid` int(11) NOT NULL,
-  `platid` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `deviceid` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `msgid` int(11) UNSIGNED NOT NULL,
+  `platid` char(10) UNSIGNED CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
+  `deviceid` int(11) UNSIGNED NOT NULL,
   `device_hash` CHAR(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `action` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `timepost` timestamp NULL DEFAULT current_timestamp(),
@@ -239,54 +247,59 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_newsletter_views` (
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_notifier` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
-  `tokenid` int(11) NOT NULL,
-  `object_id` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userid` int(11) UNSIGNED NOT NULL,
+  `tokenid` int(11) UNSIGNED NOT NULL,
+  `object_id` int(11) UNSIGNED NOT NULL,
   `type` varchar(15) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_queue` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `token_id` INT NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `token_id` INT UNSIGNED NOT NULL,
   `token` varchar(1000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `device_type` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `counter` smallint(6) UNSIGNED NOT NULL,
+  `counter` smallint(6) UNSIGNED UNSIGNED NOT NULL,
   `feedback` tinyint(1) NOT NULL,
+  `firebase` BOOLEAN NOT NULL,
   PRIMARY KEY (`id`),
   KEY `device_type` (`device_type`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_relation` (
-  `channel_id` int(11) NOT NULL,
-  `token_id` int(11) NOT NULL,
-  `userid` int(11) NOT NULL,
-  `connection_id` int(11) NOT NULL,
-  KEY `channel_id` (`channel_id`)
+  `channel_id` int(11) UNSIGNED NOT NULL,
+  `token_id` int(11) UNSIGNED NOT NULL,
+  `userid` int(11) UNSIGNED NOT NULL,
+  `connection_id` int(11) UNSIGNED NOT NULL,
+  KEY `channel_id` (`channel_id`),
+  KEY `token_id` (`token_id`),
+  KEY `userid` (`userid`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_statistics` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
   `date` date NOT NULL,
   `platid` char(20) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `msgid` int(11) NOT NULL,
+  `msgid` int(11) UNSIGNED NOT NULL,
   `action` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
-  `stat` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  `stat` int(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `date` (`date`,`platid`,`msgid`,`action`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_subscriptions` (
-  `userid` int(11) NOT NULL,
+  `userid` int(11) UNSIGNED NOT NULL,
   `keywords` varchar(200) NOT NULL,
   `categories` varchar(200) NOT NULL,
   `latitude` decimal(10,8) DEFAULT NULL,
   `longitude` decimal(11,8) DEFAULT NULL,
   `radius` smallint(6) NOT NULL,
+  `temp` SMALLINT UNSIGNED NOT NULL,
   `web` tinyint(1) NOT NULL,
   `mobile` tinyint(1) NOT NULL,
   `msn` tinyint(1) NOT NULL,
@@ -296,8 +309,8 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."push_subscriptions` (
 dbDelta($sql);
 
 $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."sm_push_tokens` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `userid` int(11) NOT NULL,
+  `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `userid` int(11) UNSIGNED NOT NULL,
   `device_token` varchar(1000) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `md5device_token` char(32) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
   `device_type` char(10) CHARACTER SET latin1 COLLATE latin1_general_ci NOT NULL,
@@ -309,12 +322,14 @@ $sql = "CREATE TABLE IF NOT EXISTS `".$wpdb->prefix."sm_push_tokens` (
   `receive_again_at` int(10) UNSIGNED NOT NULL DEFAULT 0,
   `timepost` timestamp NOT NULL DEFAULT current_timestamp(),
   `counter` smallint(6) UNSIGNED NOT NULL,
+  `firebase` BOOLEAN NOT NULL,
   `active` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `md5device_token` (`md5device_token`,`device_type`),
   KEY `latitude` (`latitude`,`longitude`,`last_geomsg_time`),
   KEY `receive_again_at` (`receive_again_at`),
-  KEY `active` (`active`)
+  KEY `active` (`active`),
+  KEY `firebase` (`firebase`)
 ) ENGINE=$dbEngine DEFAULT CHARSET=".DB_CHARSET.";";
 dbDelta($sql);
 
@@ -352,6 +367,7 @@ $wpdb->insert($wpdb->prefix.'push_connection', array(
   'postdate' => 'timepost',
   'counter_name' => 'counter',
   'active_name' => 'active',
+  'firebase_name' => 'firebase',
   'counter' => '0',
 ));
 
@@ -430,7 +446,7 @@ $setting = array(
   'safari_passphrase' => '',
   'ios_titanium_payload' => 0,
   'android_titanium_payload' => 0,
-  'purchase_code' => 'GANJAPARKER',//do not steal so you have honor
+  'purchase_code' => 'babiato',//do not steal so you have honor
   'vip' => 1,//do not steal so you have honor
   'wp_authed' => '0',
   'wp_cert' => '',
@@ -538,6 +554,7 @@ $setting = array(
   'subspage_geo_acf' => '',
   'subspage_keywords' => 1,
   'subspage_channels' => 1,
+  'subspage_rating' => 0,
   'subspage_cats_status' => 1,
   'subspage_plat_web' => 1,
   'subspage_plat_mobile' => 1,
@@ -576,7 +593,7 @@ $setting['e_woo_aband_message'] = __('we saved {productscount} items cart but qu
 $setting['e_woo_aband_last_rem'] = 0;
 $setting['e_woo_aband_last_title'] = __('{customer_name} the last call !', 'smpush-plugin-lang');
 $setting['e_woo_aband_last_message'] = __('click here and complete now your order with this special coupon', 'smpush-plugin-lang');
-$setting['desktop_webpush'] = 0;
+$setting['desktop_webpush'] = 1;
 $setting['webpush_onesignal_payload'] = 0;
 $setting['desktop_webpush_old'] = 0;
 $setting['chrome_vapid_public'] = '';
@@ -585,6 +602,7 @@ $setting['settings_version'] = SMPUSHVERSION;
 $setting['black_overlay'] = 1;
 $setting['no_disturb'] = 0;
 $setting['pwa_support'] = 0;
+$setting['pwaforwp_support'] = 0;
 $setting['amp_support'] = 0;
 $setting['amp_post_widget'] = 0;
 $setting['amp_page_widget'] = 0;
@@ -592,6 +610,10 @@ $setting['amp_post_shortcode'] = 0;
 $setting['amp_page_shortcode'] = 0;
 $setting['pwa_kaludi_support'] = 0;
 $setting['peepso_notifications'] = 0;
+$settings['firebase_auth_file'] = '';
+$settings['firebase_config'] = '';
+$settings['desktop_used_webpush'] = 0;
+$settings['fresh_firebase_webpush'] = 1;
 
 add_option('smpush_options', $setting);
 add_option('smpush_version', str_replace(',', '.', SMPUSHVERSION));

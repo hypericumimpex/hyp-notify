@@ -1,6 +1,16 @@
 
 jQuery(document).ready(function() {
 
+  jQuery("#smpush_notification_temp label").click(function(){
+    jQuery("#smpush_notification_temp label").each(function(index) {
+      jQuery(this).removeClass("smpush_checked");
+      jQuery(this).find("input").prop("checked", false);
+    });
+    jQuery(this).addClass("smpush_checked");
+    jQuery(this).find("input").prop("checked", true);
+    jQuery("#smpush_temp_screen").html("("+jQuery(this).find("input").val()+"&#176;)");
+  });
+
   jQuery("#smpush_woo_waiting_button").click(function(){
     if (! smpush_browser || typeof smpush_browser === "undefined"){
       return;

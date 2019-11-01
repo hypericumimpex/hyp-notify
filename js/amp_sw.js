@@ -48,44 +48,23 @@ function onMessageReceivedSubscriptionState() {
     });
 }
 
-function endpointWorkaround(endpoint){
-  let device_id = "";
-  if(endpoint.indexOf("mozilla") > -1){
-    device_id = endpoint.split("/")[endpoint.split("/").length-1];
-  }
-  else if(endpoint.indexOf("send/") > -1){
-    device_id = endpoint.slice(endpoint.search("send/")+5);
-  }
-  debugWriter(device_id);
-  return device_id;
-}
-
 function onMessageReceivedSubscribe() {
   debugWriter("onMessageReceivedSubscribe");
   listenSWtimerWork = true;
-  let subsConfig = { userVisibleOnly: true };
 
-  if(VAPID_WEB_PUSH == 1){
-    const applicationServerKey = urlB64ToUint8Array(SERVER_KEY);
-    subsConfig = { userVisibleOnly: true, applicationServerKey: applicationServerKey };
-  }
+  const applicationServerKey = urlB64ToUint8Array(SERVER_KEY);
+  const subsConfig = { userVisibleOnly: true, applicationServerKey: applicationServerKey };
 
   self.registration.pushManager
     .subscribe(subsConfig)
     .then(function(subscription) {
       broadcastReply(WorkerMessengerCommand.AMP_SUBSCRIBE, true);
       clearInterval(listenSWtimer);
-      if(VAPID_WEB_PUSH == 1){
-        let subscriptionData = JSON.parse(JSON.stringify(subscription));
-        let subscriptionServer = {"endpoint": subscriptionData.endpoint, "auth": subscriptionData.keys.auth, "p256dh": subscriptionData.keys.p256dh};
-        debugWriter("subscription details: ", subscriptionServer);
-        subscriptionServer = btoa(JSON.stringify(subscriptionServer));
-        return sendEndpoint(subscriptionServer);
-      }
-      else {
-        debugWriter("subscription details: ", subscription);
-        return sendEndpoint(endpointWorkaround(subscription.endpoint));
-      }
+      let subscriptionData = JSON.parse(JSON.stringify(subscription));
+      let subscriptionServer = {"endpoint": subscriptionData.endpoint, "auth": subscriptionData.keys.auth, "p256dh": subscriptionData.keys.p256dh};
+      debugWriter("subscription details: ", subscriptionServer);
+      subscriptionServer = btoa(JSON.stringify(subscriptionServer));
+      return sendEndpoint(subscriptionServer);
     })
     .catch(function(e) {
       listenSWtimerWork = false;
@@ -107,7 +86,7 @@ function sendEndpoint(subscription){
     headers: {
       "Content-type": "application/x-www-form-urlencoded; charset=UTF-8"
     },
-    body: "device_token="+subscription+"&device_type="+browserName(),
+    body: "device_token="+subscription+"&device_type="+browserName()+"&token_type=amp",
   };
   return fetch(API_ENDPOINT, options).then(
     function(response) {

@@ -221,6 +221,12 @@
                      </td>
                   </tr>
                   <tr valign="top">
+                     <td class="first"><?php echo __('One Time Push', 'smpush-plugin-lang')?></td>
+                     <td>
+                       <label><input name="once_notify" type="checkbox" <?php if($event['once_notify'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Each user receive one notification only about the same post.', 'smpush-plugin-lang')?></label>
+                     </td>
+                  </tr>
+                  <tr valign="top">
                      <td class="first"><?php echo __('Desktop Push Link', 'smpush-plugin-lang')?></td>
                      <td>
                        <label><input name="desktop_link" type="checkbox" <?php if($event['desktop_link'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable open the post link when click on desktop push notification', 'smpush-plugin-lang')?></label>

@@ -319,7 +319,7 @@ class smpush_sendpush extends smpush_controller {
     self::$sendoptions['message'] = $message;
     self::$sendoptions['status'] = 1;
     self::$sendoptions = array_merge(self::$sendoptions, $sendsetting);
-    self::$sendoptions['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid FROM {tbname} WHERE {tbname}.{md5token_name}='".md5($device_token)."' AND {tbname}.{type_name}='$device_type'";
+    self::$sendoptions['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid,{tbname}.{firebase_name} AS firebase FROM {tbname} WHERE {tbname}.{md5token_name}='".md5($device_token)."' AND {tbname}.{type_name}='$device_type'";
     
     if ($sendtime == 0) {
       $sendtime = current_time('timestamp');
@@ -352,22 +352,22 @@ class smpush_sendpush extends smpush_controller {
     }
     
     if ($ids == 'all') {
-      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid $select FROM {tbname} $inner WHERE {tbname}.{active_name}='1' AND {tbname}.receive_again_at<CURRENT_TIME_NOW $where $order";
+      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid,{tbname}.{firebase_name} AS firebase $select FROM {tbname} $inner WHERE {tbname}.{active_name}='1' AND {tbname}.receive_again_at<CURRENT_TIME_NOW $where $order";
     }
     elseif ($gettype == 'userid') {
       if(is_array($ids)){
         $ids = implode(',', $ids);
       }
-      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid $select FROM {tbname} $inner WHERE {tbname}.userid IN($ids) AND {tbname}.{active_name}='1' AND {tbname}.receive_again_at<CURRENT_TIME_NOW $where $order";
+      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid,{tbname}.{firebase_name} AS firebase $select FROM {tbname} $inner WHERE {tbname}.userid IN($ids) AND {tbname}.{active_name}='1' AND {tbname}.receive_again_at<CURRENT_TIME_NOW $where $order";
     }
     elseif ($gettype == 'tokenid') {
       $ids = implode(',', $ids);
-      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid $select FROM {tbname} $inner WHERE {tbname}.{id_name} IN($ids) AND {tbname}.{active_name}='1' AND {tbname}.receive_again_at<CURRENT_TIME_NOW $where $order";
+      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid,{tbname}.{firebase_name} AS firebase $select FROM {tbname} $inner WHERE {tbname}.{id_name} IN($ids) AND {tbname}.{active_name}='1' AND {tbname}.receive_again_at<CURRENT_TIME_NOW $where $order";
     }
     elseif ($gettype == 'channel') {
       $defconid = self::$apisetting['def_connection'];
       $tablename = $wpdb->prefix.'push_relation';
-      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid $select FROM $tablename
+      $sendsetting['query'] = "SELECT {id_name} AS id, {tbname}.{token_name} AS device_token,{tbname}.{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid,{tbname}.{firebase_name} AS firebase $select FROM $tablename
       INNER JOIN {tbname} ON(({tbname}.{id_name}=$tablename.token_id OR ({tbname}.userid>0 AND {tbname}.userid=$tablename.userid)) AND {tbname}.{active_name}='1' AND {tbname}.receive_again_at<CURRENT_TIME_NOW)
       WHERE $tablename.channel_id IN($ids) AND ($tablename.connection_id='$defconid' OR $tablename.connection_id='0') $where $order";
     }
@@ -472,6 +472,10 @@ class smpush_sendpush extends smpush_controller {
       }
     }
     self::$sendoptions['status'] = 1;
+
+    if(!empty($sendsetting['once_notify'])){
+      self::$sendoptions['once_notify'] = $sendsetting['once_notify'];
+    }
 
     if(!empty($sendsetting['desktop_link'])){
       self::$sendoptions['and_extra_type'] = 'json';
@@ -625,7 +629,7 @@ class smpush_sendpush extends smpush_controller {
           $defconid = self::$apisetting['def_connection'];
           $tablename = $wpdb->prefix.'push_relation';
           //do not forget to change in calculateDevices() if you will make any changes in this query
-          $smpush_query = self::parse_query("SELECT {tbname}.{id_name} AS token_id,{tbname}.{token_name} AS device_token,{tbname}.{counter_name} AS counter,{tbname}.{type_name} AS device_type,{tbname}.userid,GROUP_CONCAT($tablename.`channel_id` SEPARATOR ',') AS channelids $select FROM {tbname}
+          $smpush_query = self::parse_query("SELECT {tbname}.{id_name} AS token_id,{tbname}.{token_name} AS device_token,{tbname}.{counter_name} AS counter,{tbname}.{type_name} AS device_type,{tbname}.userid,{tbname}.{firebase_name} AS firebase,GROUP_CONCAT($tablename.`channel_id` SEPARATOR ',') AS channelids $select FROM {tbname}
           INNER JOIN $tablename ON(($tablename.token_id={tbname}.{id_name} AND $tablename.connection_id='$defconid') OR ({tbname}.userid>0 AND {tbname}.userid=$tablename.userid))
           $joinsql
           WHERE {tbname}.{active_name}='1' AND {tbname}.receive_again_at<".current_time('timestamp')." $where AND {tbname}.{id_name}>[lastid] GROUP BY {tbname}.{id_name} $order LIMIT 0,[limit]");
@@ -635,7 +639,7 @@ class smpush_sendpush extends smpush_controller {
         }
         else {
           //do not forget to change in calculateDevices() if you will make any changes in this query
-          $smpush_query = self::parse_query("SELECT {id_name} AS token_id,{token_name} AS device_token,{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid $select FROM {tbname} $joinsql WHERE {active_name}='1' AND receive_again_at<".current_time('timestamp')." $where AND {id_name}>[lastid] $order LIMIT 0,[limit]");
+          $smpush_query = self::parse_query("SELECT {id_name} AS token_id,{token_name} AS device_token,{type_name} AS device_type,{tbname}.{counter_name} AS counter,{tbname}.userid,{tbname}.{firebase_name} AS firebase $select FROM {tbname} $joinsql WHERE {active_name}='1' AND receive_again_at<".current_time('timestamp')." $where AND {id_name}>[lastid] $order LIMIT 0,[limit]");
           $alltokens = self::$pushdb->get_var(self::parse_query("SELECT COUNT({id_name}) FROM {tbname} WHERE {active_name}='1' AND receive_again_at<".current_time('timestamp')." $where"));
         }
         if ($alltokens === null) {
@@ -903,10 +907,10 @@ class smpush_sendpush extends smpush_controller {
               $token->userid = $wpdb->get_var("SELECT userid FROM ".$wpdb->prefix."sm_push_tokens WHERE id='$token->token_id'");
             }
             if ($options['sendtype'] == 'live') {
-              $wpdb->insert($wpdb->prefix.'push_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter));
+              $wpdb->insert($wpdb->prefix.'push_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter, 'firebase' => $token->firebase));
             }
             else {
-              $wpdb->insert($wpdb->prefix.'push_cron_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter, 'sendtime' => $message_data['starttime'], 'sendoptions' => $handler_options['msgid']));
+              $wpdb->insert($wpdb->prefix.'push_cron_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter, 'sendtime' => $message_data['starttime'], 'sendoptions' => $handler_options['msgid'], 'firebase' => $token->firebase));
             }
             if(!empty($token->userid)){
               $wpdb->insert($wpdb->prefix.'push_history', array('platform' => self::platformType($token->device_type), 'userid' => $token->userid, 'msgid' => $handler_options['msgid'], 'timepost' => $message_data['starttime']));
@@ -926,10 +930,10 @@ class smpush_sendpush extends smpush_controller {
               $token->userid = $wpdb->get_var("SELECT userid FROM ".$wpdb->prefix."sm_push_tokens WHERE id='$token->token_id'");
             }
             if ($options['sendtype'] == 'live') {
-              $wpdb->insert($wpdb->prefix.'push_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter));
+              $wpdb->insert($wpdb->prefix.'push_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter, 'firebase' => $token->firebase));
             }
             else{
-              $wpdb->insert($wpdb->prefix.'push_cron_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter, 'sendtime' => $message_data['starttime'], 'sendoptions' => $handler_options['msgid']));
+              $wpdb->insert($wpdb->prefix.'push_cron_queue', array('token_id' => $token->token_id, 'token' => $token->device_token, 'device_type' => $token->device_type, 'counter' => $token->counter, 'sendtime' => $message_data['starttime'], 'sendoptions' => $handler_options['msgid'], 'firebase' => $token->firebase));
             }
             if(!empty($token->userid)){
               $wpdb->insert($wpdb->prefix.'push_history', array('platform' => self::platformType($token->device_type), 'userid' => $token->userid, 'msgid' => $handler_options['msgid'], 'timepost' => $message_data['starttime']));
@@ -1157,7 +1161,7 @@ class smpush_sendpush extends smpush_controller {
       }
       $defconid = self::$apisetting['def_connection'];
       $tablename = $wpdb->prefix.'push_relation';
-      $tokens = $wpdb->get_results(self::parse_query("SELECT {tbname}.{id_name} AS tokenid,{tbname}.{type_name} AS device_type,GROUP_CONCAT($tablename.`channel_id` SEPARATOR ',') AS channelids $select FROM {tbname}
+      $tokens = $wpdb->get_results(self::parse_query("SELECT {tbname}.{id_name} AS tokenid,{tbname}.{type_name} AS device_type,{tbname}.{firebase_name} AS firebase,GROUP_CONCAT($tablename.`channel_id` SEPARATOR ',') AS channelids $select FROM {tbname}
       INNER JOIN $tablename ON(($tablename.token_id={tbname}.{id_name} AND $tablename.connection_id='$defconid') OR ({tbname}.userid>0 AND {tbname}.userid=$tablename.userid))
       $joinsql
       WHERE {tbname}.{active_name}='1' $gpswhere $where GROUP BY {tbname}.{id_name} $order"));
@@ -1241,7 +1245,7 @@ class smpush_sendpush extends smpush_controller {
       if(!empty(self::$apisetting['msgs_interval'])){
         $gpswhere .= ' AND receive_again_at<'.current_time('timestamp');
       }
-      $tokenstats = self::$pushdb->get_results(self::parse_query("SELECT {tbname}.{id_name} AS tokenid,{tbname}.{type_name} AS device_type $select FROM {tbname} $joinsql WHERE {active_name}='1' $gpswhere $order"), 'ARRAY_A');
+      $tokenstats = self::$pushdb->get_results(self::parse_query("SELECT {tbname}.{id_name} AS tokenid,{tbname}.{type_name} AS device_type,{tbname}.{firebase_name} AS firebase $select FROM {tbname} $joinsql WHERE {active_name}='1' $gpswhere $order"), 'ARRAY_A');
       if(!empty($tokenstats)){
         foreach($tokenstats as $tokenstat){
           if ($tokenstat['device_type'] == $types_name->ios_name && (in_array('ios', $_POST['platforms']) OR in_array('all', $_POST['platforms']))) {
@@ -1406,6 +1410,7 @@ class smpush_sendpush extends smpush_controller {
       $chrome_devices['token'][$ccounter] = $queueone->token;
       $chrome_devices['id'][$ccounter] = $queueone->token_id;
       $chrome_devices['queue_id'][$ccounter] = $queueone->id;
+      $chrome_devices['firebase'][$ccounter] = $queueone->firebase;
       $ccounter++;
     }
     foreach ($queue6 AS $queueone) {
@@ -1418,6 +1423,7 @@ class smpush_sendpush extends smpush_controller {
       $firefox_devices['token'][$fcounter] = $queueone->token;
       $firefox_devices['id'][$fcounter] = $queueone->token_id;
       $firefox_devices['queue_id'][$fcounter] = $queueone->id;
+      $firefox_devices['firebase'][$fcounter] = $queueone->firebase;
       $fcounter++;
     }
     foreach ($queue8 AS $queueone) {
@@ -1430,12 +1436,14 @@ class smpush_sendpush extends smpush_controller {
       $opera_devices['token'][$counter9] = $queueone->token;
       $opera_devices['id'][$counter9] = $queueone->token_id;
       $opera_devices['queue_id'][$counter9] = $queueone->id;
+      $opera_devices['firebase'][$counter9] = $queueone->firebase;
       $counter9++;
     }
     foreach ($queue10 AS $queueone) {
       $samsung_devices['token'][$counter10] = $queueone->token;
       $samsung_devices['id'][$counter10] = $queueone->token_id;
       $samsung_devices['queue_id'][$counter10] = $queueone->id;
+      $samsung_devices['firebase'][$counter10] = $queueone->firebase;
       $counter10++;
     }
     foreach ($queue11 AS $queueone) {
@@ -1467,6 +1475,7 @@ class smpush_sendpush extends smpush_controller {
       $edge_devices['token'][$counter15] = $queueone->token;
       $edge_devices['id'][$counter15] = $queueone->token_id;
       $edge_devices['queue_id'][$counter15] = $queueone->id;
+      $edge_devices['firebase'][$counter15] = $queueone->firebase;
       $counter15++;
     }
     $message = $options['message'];
@@ -1510,7 +1519,6 @@ class smpush_sendpush extends smpush_controller {
     global $wpdb;
     self::$cronSendOperation = $cronjob;
     $idsToDel = array();
-    add_action('phpmailer_init', array('smpush_controller', 'smtp_config'), 99, 1);
     if ($cronjob === true) {
       smpush_helper::$returnValue = 'cronjob';
     }
@@ -2115,106 +2123,45 @@ class smpush_sendpush extends smpush_controller {
       }
     }
     elseif (self::$apisetting['desktop_webpush'] == 1 && ($device_type == 'chrome' || $device_type == 'opera' || $device_type == 'samsung' || $device_type == 'edge' || $device_type == 'firefox')) {
-      require_once smpush_dir.'/lib/web-push-php/vendor/autoload.php';
-
-      $invalidDevs = array();
-      $subscriptions = array();
       $webInsertSql = '';
-      $webpushfail = 0;
+      $webpushfailIDs = [];
       $messagePayload = self::getWebPushPayload($message, $device_type);
+      self::$firebase->reset();
 
       if(smpush_env == 'debug'){
         self::log($device_token['token']);
         self::log($messagePayload);
       }
       else{
-        $auth = [
-          'FCM' => self::$apisetting['chrome_apikey'],
-          'VAPID' => [
-            'subject' => get_bloginfo('wpurl'),
-            'publicKey' => self::$apisetting['chrome_vapid_public'],
-            'privateKey' => self::$apisetting['chrome_vapid_private'],
-          ]
-        ];
-
         foreach($device_token['token'] as $key => $sToken){
-          $token = json_decode($sToken, true);
-          if(!empty($token)){
-            $subscriptions[] = [
-              'id' => $device_token['id'][$key],
-              'subscription' => Subscription::create([
-                "endpoint" => $token['endpoint'],
-                "keys" => ['p256dh' => $token['p256dh'], 'auth' => $token['auth']]
-              ]),
-              'payload' => $messagePayload,
-            ];
+          if($device_token['firebase'][$key] == 1){
+            self::$firebase->bulkSend($device_token['id'][$key], $sToken, $messagePayload);
           }
-          else{
+          elseif(substr($sToken, 0, 1) != '{'){
             $webInsertSql .= "('".self::$sendoptions['msgid']."', '".md5($sToken)."', '".$device_type."'),";
-            $endpoint = ($device_type == 'firefox')? 'https://updates.push.services.mozilla.com/wpush/v1/' : 'https://fcm.googleapis.com/fcm/send/';
-            $subscriptions[] = [
-              'id' => $device_token['id'][$key],
-              'subscription' => Subscription::create([
-                "endpoint" => $endpoint.$sToken
-              ]),
-              'oldfcm' => ($device_type == 'firefox')? 0 : 1,
-              'payload' => null,
-            ];
+            self::$firebase->gcm($device_token['id'][$key], $sToken, $device_type);
           }
         }
         if(!empty($webInsertSql)){
           $wpdb->query('INSERT INTO '.$wpdb->prefix.'push_desktop_messages (`msgid`,`token`,`type`) VALUES '.rtrim($webInsertSql, ',')).';';
         }
 
-        $webPush = new WebPush($auth);
-        foreach ($subscriptions as $notification) {
-          $webPush->sendNotification($notification['subscription'], $notification['payload']);
-        }
-        foreach ($webPush->flush(60) as $key => $report) {
-          $endpoint = $report->getRequest()->getUri()->__toString();
-          if(!empty($subscriptions[$key]['oldfcm'])){
-            $response = json_decode($report->getResponse()->getBody(), true);
-            if(!empty($response['failure'])){
-              if (isset($response['results'][0]['error'])) {
-                if ($response['results'][0]['error'] == 'InvalidRegistration' || $response['results'][0]['error'] == 'NotRegistered' || $response['results'][0]['error'] == 'MismatchSenderId') {
-                  $webpushfail++;
-                  $invalidDevs[] = $device_token['id'][$key];
-                }
-              }
-              elseif (isset($response['results'][0]['registration_id'])) {
-                $webpushfail++;
-                $invalidDevs[] = $device_token['id'][$key];
-              }
-              if(smpush_env == 'debug'){
-                self::log("[x] Message failed to sent for subscription {$endpoint}: ".$response['results'][0]['error']);
-              }
-              continue;
-            }
-          }
-          if ($report->isSuccess()) {
-            if(smpush_env == 'debug'){
-              self::log("[v] Message sent successfully for subscription {$endpoint}");
-            }
-          } else {
-            $webpushfail++;
-            $invalidDevs[] = $device_token['id'][$key];
-            if(smpush_env == 'debug'){
-              self::log("[x] Message failed to sent for subscription {$endpoint}: {$report->getReason()}");
-            }
-          }
-        }
-      }
-
-      if (isset($device_token['id'])) {
-        self::updateStats($device_type.'send', count($device_token['id']), $cronjob, $msgid);
-        self::updateStats($device_type.'fail', $webpushfail, $cronjob, $msgid);
         if ($cronjob === false) {
           $ids = implode(',', $device_token['queue_id']);
           $wpdb->query("DELETE FROM ".$wpdb->prefix."push_queue WHERE id IN($ids)");
         }
-        if (self::$sendoptions['feedback'] == 1 && !empty($invalidDevs)) {
-          self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {active_name}='0' WHERE {id_name} IN(".implode(',', $invalidDevs).")"));
-        }
+        $webpushfailIDs = self::$firebase->collectResponse();
+      }
+
+      self::updateStats($device_type.'send', count($device_token['token']), $cronjob, $msgid);
+      self::updateStats($device_type.'fail', count($webpushfailIDs), $cronjob, $msgid);
+      if (self::$sendoptions['feedback'] == 1 && !empty($webpushfailIDs)) {
+        self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {active_name}='0' WHERE {id_name} IN(".implode(',', $webpushfailIDs).")"));
+      }
+
+      if ($cronjob === false && !empty($device_token['queue_id'])) {
+        $ids = implode(',', $device_token['queue_id']);
+        $wpdb->query("DELETE FROM ".$wpdb->prefix."push_queue WHERE id IN($ids)");
       }
 
       if ($device_type == 'chrome' && !empty($_GET['chrome_notify'])) {

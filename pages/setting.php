@@ -674,7 +674,7 @@
                       <td>
                         <input class="smpush_upload_field_iconimage" type="url" size="50" name="desktop_iconimage" value="<?php echo self::$apisetting['desktop_iconimage']; ?>" />
                         <input class="smpush_upload_file_btn button action" data-container="smpush_upload_field_iconimage" type="button" value="<?php echo __('Select File', 'smpush-plugin-lang')?>" />
-                        <p class="description"><?php echo __('Set a custom icon image instead of the default bell image. Recommended size 38x38 px', 'smpush-plugin-lang')?></p>
+                        <p class="description"><?php echo __('Set a custom icon image instead of the default bell image. Recommended size 48x48 px', 'smpush-plugin-lang')?></p>
                       </td>
                     </tr>
                     <tr valign="top">
@@ -821,67 +821,58 @@
                       </td>
                     </tr>
                     <tr valign="top">
-                      <td class="first"><?php echo __('Enable Web Push', 'smpush-plugin-lang')?></td>
+                      <td class="first"><?php echo __('Firebase Config', 'smpush-plugin-lang')?></td>
                       <td>
-                        <label><input name="desktop_webpush" type="checkbox" value="1" <?php if(!empty($params['envErrors'])):?>disabled<?php endif; ?> <?php if (self::$apisetting['desktop_webpush'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Send web push messages with payload will save server resources because it does not make API requests to fetch the messages from your server.', 'smpush-plugin-lang')?></label>
-                        <p class="description"><?php echo __('Recommended for VPS or dedicated servers not shared hosting', 'smpush-plugin-lang')?></p>
-                        <?php if(!empty($params['envErrors'])):?>
-                          <p class="description"><?php echo __('Your server is not ready yet to send web push. List of requirements:', 'smpush-plugin-lang')?></p>
-                          <?php foreach($params['envErrors'] as $envError): ?>
-                            <p class="description"><?php echo $envError; ?></p>
-                          <?php endforeach; endif; ?>
+                        <textarea name="firebase_config" rows="8" style="width:80%;max-width:500px" placeholder='{
+  apiKey: "AIzaSyDUHaVe7icRc1Z2daycalv_cveWQER_mK4",
+  authDomain: "push-notification-bcc8d.firebaseapp.com",
+  databaseURL: "https://push-notification-bcc8d.firebaseio.com",
+  projectId: "push-notification-bcc8d",
+  storageBucket: "push-notification-bcc8d.appspot.com",
+  messagingSenderId: "711898931966",
+  appId: "1:711898931966:web:c2c73a13c66a72d0a5d9f6"
+}' class="regular-text"><?php echo self::$apisetting['firebase_config']; ?></textarea>
+                        <p class="description"><?php echo __('For how to setup web push notification', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/product/push-notification-system/documentation#web-configurations" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_show">
-                      <td class="first"><?php echo __('VAPID Public Key', 'smpush-plugin-lang')?></td>
+                    <tr valign="top">
+                      <td class="first"><?php echo __('Firebase Authentication File', 'smpush-plugin-lang')?></td>
                       <td>
-                        <input type="text" name="chrome_vapid_public" value="<?php echo self::$apisetting['chrome_vapid_public']; ?>" class="regular-text" size="80" />
+                        <input type="text" size="50" name="firebase_auth_file" value="<?php echo self::$apisetting['firebase_auth_file']; ?>" />
+                        <input type="file" name="firebase_auth_file_upload" />
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_show">
-                      <td class="first"><?php echo __('VAPID Private Key', 'smpush-plugin-lang')?></td>
+                    <tr valign="top">
+                      <td class="first">Firebase <?php echo __('Server Key', 'smpush-plugin-lang')?></td>
                       <td>
-                        <input type="text" name="chrome_vapid_private" value="<?php echo self::$apisetting['chrome_vapid_private']; ?>" class="regular-text" size="50" />
+                        <input type="text" name="chrome_apikey" value="<?php echo self::$apisetting['chrome_apikey']; ?>" class="regular-text" size="80" />
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_show">
-                      <td class="first"><?php echo __('Desktop Push Compatibility', 'smpush-plugin-lang')?></td>
+                    <tr valign="top">
+                      <td class="first">Firebase <?php echo __('Sender ID', 'smpush-plugin-lang')?></td>
                       <td>
-                        <label><input name="desktop_webpush_old" type="checkbox" value="1" <?php if (self::$apisetting['desktop_webpush_old'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable this option if you already have web push subscribers before plugin\'s version 8.0', 'smpush-plugin-lang')?></label>
+                        <input type="number" name="chrome_projectid" value="<?php echo self::$apisetting['chrome_projectid']; ?>" class="regular-text" placeholder="<?php echo __('e.g. 590173865545', 'smpush-plugin-lang')?>" size="30" />
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_show">
+                    <tr valign="top">
                       <td class="first"><?php echo __('OneSignal Compliant', 'smpush-plugin-lang')?></td>
                       <td>
                         <label><input name="webpush_onesignal_payload" type="checkbox" value="1" <?php if (self::$apisetting['webpush_onesignal_payload'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Enable this option if you import some subscribers from OneSignal.', 'smpush-plugin-lang')?></label>
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_hide">
+                    <tr valign="top">
                       <td class="first"><?php echo __('Offline Messages', 'smpush-plugin-lang')?></td>
                       <td>
                         <label><input name="desktop_offline" type="checkbox" value="1" <?php if (self::$apisetting['desktop_offline'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Show offline messages when user opens his browser again', 'smpush-plugin-lang')?></label>
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_hide">
-                      <td class="first">Firebase <?php echo __('API Key', 'smpush-plugin-lang')?></td>
-                      <td>
-                        <input type="text" name="chrome_apikey" value="<?php echo self::$apisetting['chrome_apikey']; ?>" class="regular-text" size="50" />
-                      </td>
-                    </tr>
-                    <tr valign="top" class="desktop_webpush_hide">
-                      <td class="first">Firebase <?php echo __('Sender ID', 'smpush-plugin-lang')?></td>
-                      <td>
-                        <input type="number" name="chrome_projectid" value="<?php echo self::$apisetting['chrome_projectid']; ?>" class="regular-text" placeholder="<?php echo __('e.g. 590173865545', 'smpush-plugin-lang')?>" size="30" />
-                        <p class="description"><?php echo __('For how to get API key and project number', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/blog/61/get-api-key-sender-id-fcm-push-notification-firebase/" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
-                      </td>
-                    </tr>
                     <tr valign="top">
                       <td class="first"><?php echo __('No Disturb', 'smpush-plugin-lang')?></td>
                       <td>
-                        <label><input name="no_disturb" type="checkbox" value="1" <?php if (self::$apisetting['no_disturb'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Always show last notification only and cancel previous one', 'smpush-plugin-lang')?></label>
+                        <label><input name="no_disturb" type="checkbox" value="1" <?php if (self::$apisetting['no_disturb'] == 1) { ?>checked="checked"<?php } ?>> <?php echo __('Always show the last notification only and cancel any old notifications', 'smpush-plugin-lang')?></label>
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_hide">
+                    <tr valign="top">
                       <td class="first"><?php echo __('Default Icon', 'smpush-plugin-lang')?></td>
                       <td>
                         <input class="smpush_upload_field_deskicon" type="url" size="50" name="desktop_deficon" value="<?php echo self::$apisetting['desktop_deficon']; ?>" />
@@ -889,7 +880,7 @@
                         <p class="description"><?php echo __('Choose an icon in a standard size 192x192 px', 'smpush-plugin-lang')?></p>
                       </td>
                     </tr>
-                    <tr valign="top" class="desktop_webpush_hide">
+                    <tr valign="top">
                       <td class="first"><?php echo __('Additional Manifest', 'smpush-plugin-lang')?></td>
                       <td>
                         <textarea name="chrome_manifest" rows="8" cols="70" placeholder='e.g. {"start_url":"/index.html","display":"standalone"}' class="regular-text"><?php echo self::$apisetting['chrome_manifest']; ?></textarea>
@@ -1038,10 +1029,17 @@
                 <table class="form-table">
                   <tbody>
                     <tr valign="top">
-                      <td class="first"><label><?php echo __('Enable PWA Support', 'smpush-plugin-lang')?></label></td>
+                      <td class="first"><label><?php echo __('Enable SuperPWA Support', 'smpush-plugin-lang')?></label></td>
                       <td>
                         <label><input name="pwa_support" type="checkbox" value="1" <?php if (self::$apisetting['pwa_support'] == 1) { ?>checked="checked"<?php } ?>>
                           <?php echo __('Enable PWA support for', 'smpush-plugin-lang')?> <a href="https://wordpress.org/plugins/super-progressive-web-apps/" target="_blank">SuperPWA</a> <?php echo __('plugin', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><label><?php echo __('Enable PWA for WP Support', 'smpush-plugin-lang')?></label></td>
+                      <td>
+                        <label><input name="pwaforwp_support" type="checkbox" value="1" <?php if (self::$apisetting['pwaforwp_support'] == 1) { ?>checked="checked"<?php } ?>>
+                          <?php echo __('Enable PWA support for', 'smpush-plugin-lang')?> <a href="https://wordpress.org/plugins/pwa-for-wp/" target="_blank">PWA for WP & AMP</a> <?php echo __('plugin', 'smpush-plugin-lang')?></label>
                       </td>
                     </tr>
                     <input name="pwa_kaludi_support" type="hidden" value="0">
@@ -1053,11 +1051,24 @@
                       </td>
                     </tr>-->
                     <tr valign="top">
+                      <td class="first"><?php echo __('VAPID Public Key', 'smpush-plugin-lang')?></td>
+                      <td>
+                        <input type="text" name="chrome_vapid_public" value="<?php echo self::$apisetting['chrome_vapid_public']; ?>" class="regular-text" size="80" />
+                        <p class="description"><?php echo __('Get your own VAPID keys using this tool', 'smpush-plugin-lang')?> <a href="https://tools.reactpwa.com/vapid?email=<?php echo urlencode(get_bloginfo('admin_email'))?>" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
+                      </td>
+                    </tr>
+                    <tr valign="top">
+                      <td class="first"><?php echo __('VAPID Private Key', 'smpush-plugin-lang')?></td>
+                      <td>
+                        <input type="text" name="chrome_vapid_private" value="<?php echo self::$apisetting['chrome_vapid_private']; ?>" class="regular-text" size="50" />
+                      </td>
+                    </tr>
+                    <tr valign="top">
                       <td class="first"><label><?php echo __('Enable AMP Support', 'smpush-plugin-lang')?></label></td>
                       <td>
-                        <input name="amp_support" type="checkbox" value="1" <?php if (self::$apisetting['amp_support'] == 1) { ?>checked="checked"<?php } ?> <?php if (self::$apisetting['desktop_webpush'] == 0) { ?>disabled="disabled"<?php } ?>>
-                        <?php if (self::$apisetting['desktop_webpush'] == 0): ?>
-                          <code><?php echo __('AMP supports VAPID web push only.', 'smpush-plugin-lang')?></code>
+                        <input name="amp_support" type="checkbox" value="1" <?php if (self::$apisetting['amp_support'] == 1) { ?>checked="checked"<?php } ?> <?php if (empty(self::$apisetting['chrome_vapid_public'])) { ?>disabled="disabled"<?php } ?>>
+                        <?php if (empty(self::$apisetting['chrome_vapid_public'])): ?>
+                          <code><?php echo __('Set VAPID keys first to enable AMP support.', 'smpush-plugin-lang')?></code>
                         <?php endif; ?>
                       </td>
                     </tr>
@@ -1674,6 +1685,12 @@
                       </td>
                     </tr>
                     <tr valign="top">
+                      <td class="first"><?php echo __('Temperature', 'smpush-plugin-lang')?></td>
+                      <td>
+                        <label><input type="checkbox" value="1" name="subspage_rating" <?php if(self::$apisetting['subspage_rating'] == 1):?>checked="checked"<?php endif;?> /> <?php echo __('Enable selecting post temperature for Rehub theme', 'smpush-plugin-lang')?></label>
+                      </td>
+                    </tr>
+                    <tr valign="top">
                       <td class="first"><?php echo __('Categories', 'smpush-plugin-lang')?></td>
                       <td>
                         <label><input type="checkbox" value="1" name="subspage_cats_status" <?php if(self::$apisetting['subspage_cats_status'] == 1):?>checked="checked"<?php endif;?> /> <?php echo __('Show categories for users to subscribe in its posts notifications', 'smpush-plugin-lang')?></label>
@@ -2105,6 +2122,33 @@ jQuery(document).ready(function() {
     }
   });
   jQuery("input[name='desktop_webpush']").trigger("change");
+
+  jQuery("input[name='chrome_apikey'], textarea[name='firebase_config']").change(function () {
+    if(jQuery(this).val().length > 0 && jQuery(this).val().length < 100){
+      alert("Please enter a valid API key. copy Server key not Legacy server key from Firebase console.");
+      jQuery(this).val("");
+    }
+  });
+
+  jQuery("textarea[name='firebase_config']").change(function () {
+    var fireconfig = jQuery(this).val().replace(/const\s?firebaseConfig\s?=\s?/gi, "").replace("};", "}").replace("} ;", "}");
+    try {
+      var obj = eval('(' + fireconfig + ')');
+      fireconfig = JSON.stringify(obj);
+      try {
+        JSON.parse(fireconfig);
+        jQuery(this).val(fireconfig);
+        console.log(fireconfig);
+      } catch(e) {
+        alert("Please enter a valid Firebase config");
+        jQuery(this).val("");
+      }
+    } catch (e) {
+      if (e instanceof SyntaxError) {
+        alert("Please enter a valid Firebase config");
+      }
+    }
+  });
 
   jQuery("input[name='subspage_geo_status']").change(function () {
     if(jQuery(this).is(':checked')){

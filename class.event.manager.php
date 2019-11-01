@@ -43,6 +43,7 @@ class smpush_event_manager extends smpush_controller {
       $data['msg_template'] = $_POST['msg_template'];
       $data['conditions'] = (empty($conditions))? '' : serialize($conditions);
       $data['payload_fields'] = (empty($_POST['payload']))? '' : serialize($_POST['payload']);
+      $data['once_notify'] = (isset($_POST['once_notify']))? 1 : 0;
       $data['desktop_link'] = (isset($_POST['desktop_link']))? 1 : 0;
       $data['email'] = (isset($_POST['email']))? 1 : 0;
       $data['status'] = (isset($_POST['status']))? 1 : 0;
@@ -127,7 +128,7 @@ class smpush_event_manager extends smpush_controller {
     }
     elseif (isset($_GET['id'])) {
       if ($_GET['id'] == -1) {
-        $event = array('id' => 0, 'title' => '', 'event_type' => '1', 'msg_template' => 0, 'post_type' => '', 'subject' => '', 'message' => '', 'fbmsn_message' => '', 'fbnotify_message' => '', 'email_message' => '', 'notify_segment' => 'all', 'subs_filter' => 'all', 'userid_field' => '', 'desktop_link' => 1, 'email' => 0, 'status' => 1, 'ignore' => 0);
+        $event = array('id' => 0, 'title' => '', 'event_type' => '1', 'msg_template' => 0, 'post_type' => '', 'subject' => '', 'message' => '', 'fbmsn_message' => '', 'fbnotify_message' => '', 'email_message' => '', 'notify_segment' => 'all', 'subs_filter' => 'all', 'userid_field' => '', 'desktop_link' => 1, 'once_notify' => 0, 'email' => 0, 'status' => 1, 'ignore' => 0);
       }
       else {
         $event = $wpdb->get_row("SELECT * FROM ".$wpdb->prefix."push_events WHERE id='$_GET[id]'", 'ARRAY_A');

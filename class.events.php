@@ -269,6 +269,7 @@ class smpush_events extends smpush_controller{
       foreach($events as $event){
         self::$payloads = array();
         self::$cronsettings = array();
+        self::$cronsettings['once_notify'] = $event['once_notify'];
         $event = stripslashes_deep($event);
         self::$desktopLinkOpen = $event['desktop_link'];
         self::$emailWPUsers = $event['email'];

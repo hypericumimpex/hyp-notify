@@ -78,6 +78,11 @@
                      <p class="description"><?php echo __('Name of the table column that stores the devices status 1 or 0', 'smpush-plugin-lang')?></p></td>
                   </tr>
                   <tr valign="top">
+                     <td class="first"><?php echo __('Firebase', 'smpush-plugin-lang')?><br />(<?php echo __('optional', 'smpush-plugin-lang')?>)</td>
+                     <td><input name="firebase_name" value="<?php echo $connection['firebase_name'];?>" type="text" size="40">
+                     <p class="description"><?php echo __('Name of the table column that stores if the device is Firebase token or not 1 or 0', 'smpush-plugin-lang')?></p></td>
+                  </tr>
+                  <tr valign="top">
                      <td class="first"><?php echo __('Latitude', 'smpush-plugin-lang')?><br />(<?php echo __('optional', 'smpush-plugin-lang')?>)</td>
                      <td><input name="latitude_name" value="<?php echo $connection['latitude_name'];?>" type="text" size="40">
                      <p class="description"><?php echo __('Name of the table column that stores the devices GPS location latitude point', 'smpush-plugin-lang')?></p></td>

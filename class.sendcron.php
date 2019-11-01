@@ -146,6 +146,28 @@ class smpush_cronsend extends smpush_controller {
     update_option('smpush_woo_reminders', $UNIXTIMENOW);
   }
 
+  public static function convertToFirebase() {
+    if(empty(self::$apisetting['desktop_used_webpush']) || empty(self::$apisetting['chrome_vapid_public'])){
+      return;
+    }
+    $webpushTokens = self::$pushdb->get_results(self::parse_query("SELECT {id_name} AS id, {token_name} AS device_token, {type_name} AS device_type  FROM {tbname} WHERE {active_name}='1' AND {firebase_name}='0'"));
+    if($webpushTokens){
+      $api = new smpush_api('', '', '', true);
+      foreach($webpushTokens as $webpushToken){
+        if(substr($webpushToken->device_token, 0, 1) == '{'){
+          self::log('converting token: '.$webpushToken->device_token);
+          $new_token = self::$firebase->convert($webpushToken->device_token);
+          if($new_token === false){
+            self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {active_name}='0' WHERE {id_name}='$webpushToken->id'"));
+          } elseif(! empty($new_token)){
+            self::log('success converted to: '.$new_token);
+            $api->process_refresh_token($webpushToken->id, $new_token, $webpushToken->device_type);
+          }
+        }
+      }
+    }
+  }
+
   public static function runEventQueue() {
     global $wpdb;
     $TIMENOW = gmdate('Y-m-d H:i:s', current_time('timestamp'));
@@ -233,7 +255,7 @@ class smpush_cronsend extends smpush_controller {
               else{
                 $wpdb->query("UPDATE ".$wpdb->prefix."sm_push_tokens SET receive_again_at='0' WHERE id IN($tempDeviceIDs)");
               }
-              $devices = self::$pushdb->get_results(self::parse_query("SELECT {id_name} AS id, {token_name} AS device_token,{type_name} AS device_type,{counter_name} AS counter,userid FROM {tbname} WHERE {id_name} IN($tempDeviceIDs) ORDER BY {type_name}"), ARRAY_A);
+              $devices = self::$pushdb->get_results(self::parse_query("SELECT {id_name} AS id, {token_name} AS device_token,{type_name} AS device_type,{counter_name} AS counter,userid,{firebase_name} AS firebase FROM {tbname} WHERE {id_name} IN($tempDeviceIDs) ORDER BY {type_name}"), ARRAY_A);
               if($devices){
                 if($message['send_type'] == 'geofence'){
                   $geodevices = array();
@@ -248,6 +270,13 @@ class smpush_cronsend extends smpush_controller {
                   $cronInserCounter++;
                   $passOptions = -1;
                   if(!empty($message['options']['post_id']) && !empty($device['userid'])){
+                    if(!empty($message['options']['once_notify'])){
+                      $isReceived = $wpdb->get_var("SELECT id FROM ".$wpdb->prefix."push_history WHERE postid='".$message['options']['post_id']."' AND userid='".$device['userid']."' AND platform='".self::platformType($device['device_type'])."'");
+                      if($isReceived){
+                        self::log('user receive a message about this post');
+                        continue;
+                      }
+                    }
                     if(self::$apisetting['subspage_post_type'] == self::$post->post_type){
                       $passOptions = self::checkSubsription($device['userid']);
                       if($passOptions === false){
@@ -275,7 +304,7 @@ class smpush_cronsend extends smpush_controller {
                   }
 
                   if(!empty($device['userid'])){
-                    $wpdb->insert($wpdb->prefix.'push_history', array('platform' => self::platformType($device['device_type']), 'userid' => $device['userid'], 'msgid' => $message['id'], 'timepost' => $message['starttime']));
+                    $wpdb->insert($wpdb->prefix.'push_history', array('platform' => self::platformType($device['device_type']), 'userid' => $device['userid'], 'msgid' => $message['id'], 'postid' => ((empty($message['options']['post_id']))? 0 : $message['options']['post_id']), 'timepost' => $message['starttime']));
                   }
 
                   $badgeCounter = 0;
@@ -287,15 +316,15 @@ class smpush_cronsend extends smpush_controller {
                     self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {counter_name}={counter_name}+1 WHERE {id_name}='$device[id]'"));
                     $badgeCounter = $device['counter']+1;
                   }
-                  $cronInserSql .= "('$device[id]','$device[device_token]','$device[device_type]','$UNIXTIMENOW','$message[id]','$badgeCounter'),";
+                  $cronInserSql .= "('$device[id]','$device[device_token]','$device[device_type]','$UNIXTIMENOW','$message[id]','$badgeCounter','$device[firebase]'),";
                   if($cronInserCounter >= 1000){
-                    $wpdb->query('INSERT INTO '.$wpdb->prefix.'push_cron_queue (`token_id`,`token`,`device_type`,`sendtime`,`sendoptions`,`counter`) VALUES '.rtrim($cronInserSql, ',')).';';
+                    $wpdb->query('INSERT INTO '.$wpdb->prefix.'push_cron_queue (`token_id`,`token`,`device_type`,`sendtime`,`sendoptions`,`counter`,firebase) VALUES '.rtrim($cronInserSql, ',')).';';
                     $cronInserSql = '';
                     $cronInserCounter = 0;
                   }
                 }
                 if($cronInserCounter < 1000 && $cronInserCounter > 0 && !empty($cronInserSql)){
-                  $wpdb->query('INSERT INTO '.$wpdb->prefix.'push_cron_queue (`token_id`,`token`,`device_type`,`sendtime`,`sendoptions`,`counter`) VALUES '.rtrim($cronInserSql, ',')).';';
+                  $wpdb->query('INSERT INTO '.$wpdb->prefix.'push_cron_queue (`token_id`,`token`,`device_type`,`sendtime`,`sendoptions`,`counter`,firebase) VALUES '.rtrim($cronInserSql, ',')).';';
                 }
               }
             }
@@ -351,7 +380,7 @@ class smpush_cronsend extends smpush_controller {
                 );
                 $wpdb->insert($wpdb->prefix.'push_cron_queue', $crondata);
                 if(!empty($extraWPEmail->user_id)){
-                  $wpdb->insert($wpdb->prefix.'push_history', array('platform' => 'email', 'userid' => $extraWPEmail->user_id, 'msgid' => $message['id'], 'timepost' => $message['starttime']));
+                  $wpdb->insert($wpdb->prefix.'push_history', array('platform' => 'email', 'userid' => $extraWPEmail->user_id, 'msgid' => $message['id'], 'postid' => ((empty($message['options']['post_id']))? 0 : $message['options']['post_id']), 'timepost' => $message['starttime']));
                 }
               }
             }
@@ -379,7 +408,20 @@ class smpush_cronsend extends smpush_controller {
     else{
       $catMatch = true;
       $keyMatch = true;
+      $rateMatch = true;
       $geoMatch = true;
+      if(self::$apisetting['subspage_rating'] == 1 && !empty($subsription['temp'])){
+        $post_hot_count = get_post_meta(self::$post->ID, 'post_hot_count', true);
+        if(empty($post_hot_count) || $post_hot_count < $subsription['temp']){
+          if(smpush_env == 'debug'){
+            self::log('does not match post temp');
+          }
+          $rateMatch = false;
+        }
+      }
+      elseif((self::$apisetting['subspage_rating'] == 0 || empty($subsription['temp'])) && self::$apisetting['subspage_matchone'] == 1){
+        $rateMatch = false;
+      }
       if(self::$apisetting['subspage_keywords'] == 1 && !empty($subsription['keywords'])){
         $subsription['keywords'] = str_replace(',', '|', $subsription['keywords']);
         if(! preg_match('/\s('.$subsription['keywords'].')\s/i', ' '.self::$post->post_title.' ')){
@@ -428,13 +470,13 @@ class smpush_cronsend extends smpush_controller {
       elseif((self::$apisetting['subspage_geo_status'] == 0 || empty($subsription['latitude'])) && self::$apisetting['subspage_matchone'] == 1){
         $geoMatch = false;
       }
-      if(self::$apisetting['subspage_matchone'] == 1 && $catMatch === false && $keyMatch === false && $geoMatch === false){
+      if(self::$apisetting['subspage_matchone'] == 1 && $catMatch === false && $keyMatch === false && $geoMatch === false && $rateMatch === false){
         if(smpush_env == 'debug'){
           self::log('no matches for this user');
         }
         return false;
       }
-      elseif(self::$apisetting['subspage_matchone'] == 0 && ($catMatch === false || $keyMatch === false || $geoMatch === false)){
+      elseif(self::$apisetting['subspage_matchone'] == 0 && ($catMatch === false || $keyMatch === false || $geoMatch === false || $rateMatch === false)){
         if(smpush_env == 'debug'){
           self::log('one of matches is missed');
         }
@@ -483,6 +525,7 @@ class smpush_cronsend extends smpush_controller {
     @ini_set('error_log', smpush_dir.'/cron_log.log');
     global $wpdb;
     $wpdb->show_errors();
+    self::convertToFirebase();
     self::runWooReminders();
     self::runEventQueue();
     self::processMessages();
@@ -509,7 +552,7 @@ class smpush_cronsend extends smpush_controller {
       session_start();
     }
     $types_name = $wpdb->get_row("SELECT ios_name,iosfcm_name,edge_name,android_name,wp_name,bb_name,chrome_name,safari_name,firefox_name,wp10_name,fbmsn_name,fbnotify_name,opera_name,samsung_name,email_name FROM ".$wpdb->prefix."push_connection WHERE id='".self::$apisetting['def_connection']."'");
-    $queue = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."push_cron_queue WHERE $TIMENOW>sendtime ORDER BY sendoptions ASC");
+    $queue = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."push_cron_queue WHERE $TIMENOW>=sendtime ORDER BY sendoptions ASC");
     if($queue) {
       foreach($queue AS $queueone) {
         if(empty(self::$tempunique)){
@@ -633,6 +676,7 @@ class smpush_cronsend extends smpush_controller {
           self::$chDelIDS[] = $queueone->id;
           self::$chDevices['token'][self::$chCounter] = $queueone->token;
           self::$chDevices['id'][self::$chCounter] = $queueone->token_id;
+          self::$chDevices['firebase'][self::$chCounter] = $queueone->firebase;
           self::$chCounter++;
         }
         elseif($queueone->device_type == $types_name->safari_name) {
@@ -645,18 +689,21 @@ class smpush_cronsend extends smpush_controller {
           self::$fiDelIDS[] = $queueone->id;
           self::$fiDevices['token'][self::$fiCounter] = $queueone->token;
           self::$fiDevices['id'][self::$fiCounter] = $queueone->token_id;
+          self::$fiDevices['firebase'][self::$fiCounter] = $queueone->firebase;
           self::$fiCounter++;
         }
         elseif($queueone->device_type == $types_name->opera_name) {
           self::$DelIDS9[] = $queueone->id;
           self::$Devices9['token'][self::$Counter9] = $queueone->token;
           self::$Devices9['id'][self::$Counter9] = $queueone->token_id;
+          self::$Devices9['firebase'][self::$Counter9] = $queueone->firebase;
           self::$Counter9++;
         }
         elseif($queueone->device_type == $types_name->samsung_name) {
           self::$DelIDS10[] = $queueone->id;
           self::$Devices10['token'][self::$Counter10] = $queueone->token;
           self::$Devices10['id'][self::$Counter10] = $queueone->token_id;
+          self::$Devices10['firebase'][self::$Counter10] = $queueone->firebase;
           self::$Counter10++;
         }
         elseif($queueone->device_type == $types_name->fbmsn_name) {
@@ -681,6 +728,7 @@ class smpush_cronsend extends smpush_controller {
           self::$DelIDS14[] = $queueone->id;
           self::$Devices14['token'][self::$Counter14] = $queueone->token;
           self::$Devices14['id'][self::$Counter14] = $queueone->token_id;
+          self::$Devices14['firebase'][self::$Counter14] = $queueone->firebase;
           self::$Counter14++;
         }
         elseif($queueone->device_type == $types_name->iosfcm_name) {

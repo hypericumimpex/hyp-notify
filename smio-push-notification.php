@@ -4,7 +4,7 @@ Plugin Name: HYP Smart Notifications
 Plugin URI: https://github.com/hypericumimpex/hyp-notify/
 Description: Provides a complete solution to send web and mobile notification messages to platforms iOS, Android, Chrome, Safari, Firefox, Opera, Edge, Samsung Browser, Windows Phone 8, Windows 10, BlackBerry 10, FB Messenger and Newsletter.
 Author: Hypericum
-Version: 8.4.86
+Version: 9.0
 Author URI: https://github.com/hypericumimpex/
 */
 
@@ -14,7 +14,7 @@ define('smpush_dir', plugin_dir_path(__FILE__));
 define('smpush_imgpath', plugins_url('/images', __FILE__));
 define('smpush_csspath', plugins_url('/css', __FILE__));
 define('smpush_jspath', plugins_url('/js', __FILE__));
-define('SMPUSHVERSION', 8.486);
+define('SMPUSHVERSION', 9);
 define('smpush_env', 'production');//debug, production
 define('smpush_env_demo', false);
 define('smpush_mobapp_mode', false);
@@ -39,7 +39,10 @@ require(smpush_dir.'/class.localization.php');
 require(smpush_dir.'/class.event.manager.php');
 require(smpush_dir.'/class.shortcode.php');
 require(smpush_dir.'/class.amp.php');
+require(smpush_dir.'/class.pwa.php');
+require(smpush_dir.'/class.firebase.php');
 require(smpush_dir.'/class.peepso.php');
+require(smpush_dir.'/class.gcm.php');
 
 $upload_dir = wp_upload_dir();
 define('smpush_upload_dir', $upload_dir['basedir']);
@@ -95,12 +98,17 @@ function smpush_start(){
   add_action('admin_enqueue_scripts', array('smpush_localization', 'javascript'));
   add_action('smpush_update_counters', array('smpush_controller', 'setup_bridge'));
   add_action('smpush_update_counters', array($smpush_controller, 'check_update_notify'));
+  add_action('phpmailer_init', array($smpush_controller, 'smtp_config'), 99, 1);
   add_action('smpush_update_counters', array('smpush_controller', 'update_all_counters'));
   add_action('smpush_recurring_cron', array('smpush_controller', 'run_silent_cron'));
   add_action('wp_login', array('smpush_controller', 'refresh_linked_user'));
   add_action('smpush_silent_cron', array('smpush_autorss', 'run_rss_reader'));
   add_action('wp_footer', array('smpush_build_profile', 'messengerWidget'), 0);
   add_action('wp_footer', array('smpush_build_profile', 'load_frontend_push'), 0);
+
+  $pwa_for_wp = new smpush_support_pwaforwp($smpush_controller::$apisetting);
+  add_filter('pwaforwp_manifest', array($pwa_for_wp, 'manifest'));
+  add_filter('pwaforwp_sw_name_modify', array($pwa_for_wp, 'sw_name_modify'));
 
   add_filter('query_vars', array($smpush_controller, 'register_vars'));
 }
@@ -198,7 +206,12 @@ function smpush_install_code($blog_id = false, $purchase_code='', $google_apikey
 }
 
 function smpush_upgrade($version){
-  require_once(smpush_dir.'/upgrade.php');
+  $is_ready = get_transient('smpush_process_upgrade');
+  if(empty($is_ready)){
+    require_once(smpush_dir.'/upgrade.php');
+  } else {
+    set_transient('smpush_process_upgrade', 1, 3600);
+  }
 }
 
 function smpush_uninstall(){
@@ -258,6 +271,7 @@ function smpush_uninstall_code(){
     delete_option('smpush_instant_send');
     delete_option('smpush_cron_stats');
     delete_option('smpush_woo_reminders');
+    delete_option('smpush_dismiss_vapwarn');
     delete_option('smpush_stats');
     wp_clear_scheduled_hook('smpush_recurring_cron');
     wp_clear_scheduled_hook('smpush_silent_cron');
@@ -267,6 +281,8 @@ function smpush_uninstall_code(){
     @unlink(ABSPATH.'/smart_service_worker.js');
     @unlink(ABSPATH.'/smart_bridge.php');
     @unlink(ABSPATH.'/smart_push_sw.js');
+    @unlink(ABSPATH.'/smart_firebase_sw.js');
+    @unlink(ABSPATH.'/smwp_amp_sw.js');
   }
 }
 
@@ -280,4 +296,3 @@ function smiopush_bb_expiration_rememberme(){
 
 function smiopush_expiration_filter($seconds, $user_id, $remember){
   return 15552000;
-}

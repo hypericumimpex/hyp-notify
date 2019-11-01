@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /*======================================================================*\
 || #################################################################### ||
@@ -91,7 +91,7 @@ class smpush_autoupdate extends smpush_controller {
     $lastupdate = json_decode($helper->buildCurl('https://smartiolabs.com/update/push_notification', false, array('purchase_code' => self::$apisetting['purchase_code'])), true);
     if($helper->curl_status == 401){
       self::$apisetting['vip'] = 1;
-      self::$apisetting['purchase_code'] = 'GANJAPARKER';
+      self::$apisetting['purchase_code'] = 'babiato';
       update_option('smpush_options', self::$apisetting);
       if(is_multisite()){
         self::updateNetworkPurchaseCode('');

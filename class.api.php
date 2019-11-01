@@ -13,13 +13,14 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
-class smpush_api extends smpush_controller{
+class smpush_api extends smpush_controller {
   public $counter = 0;
   public $dateformat;
   public $queryorder;
   protected $carry;
 
-  public function __construct($method='', $returnValue=false, $carry = ''){
+  public function __construct($method='', $returnValue=false, $carry = '', $silent_init = false){
+    if($silent_init) return;
     if(!isset($_REQUEST['orderby'])){
       $_REQUEST['orderby'] = '';
     }
@@ -210,16 +211,57 @@ class smpush_api extends smpush_controller{
     $this->output(1, __('Wrong parameters', 'smpush-plugin-lang'));
   }
 
+  public function process_refresh_token($tokenid, $token, $type){
+    if(empty($tokenid)){
+      return false;
+    }
+
+    self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {token_name}='".$token."',{md5token_name}='".md5($token)."',{firebase_name}='1' WHERE {id_name}='$tokenid'"));
+
+    self::$firebase->subscribeToTopic('public', $token);
+    self::$firebase->subscribeToTopic($type, $token);
+
+    $userid = self::$pushdb->get_var(self::parse_query("SELECT userid FROM {tbname} WHERE {id_name}='$tokenid'"));
+    if(!empty($userid)){
+      self::$firebase->subscribeToTopic('user_'.$userid, $token);
+    }
+
+    global $wpdb;
+    $subschans = $wpdb->get_results("SELECT channel_id FROM ".SMPUSHTBPRE."push_relation WHERE token_id='$tokenid'");
+    if($subschans){
+      foreach($subschans AS $subschan){
+        self::$firebase->subscribeToTopic('channel_'.$subschan->channel_id, $token);
+      }
+    }
+  }
+
+  public function refresh_token(){
+    $this->CheckParams(array('device_token','device_type','device_old_token'));
+
+    $tokenid = self::$pushdb->get_var(self::parse_query("SELECT {id_name} FROM {tbname} WHERE {md5token_name}='".md5($_REQUEST['device_old_token'])."' AND {type_name}='$_REQUEST[device_type]'"));
+    if($tokenid){
+      $this->process_refresh_token($tokenid);
+    }
+    return $this->output(1, __('Subscription has been refreshed successfully', 'smpush-plugin-lang'));
+  }
+
   public function savetoken($printout=true){
     $this->CheckParams(array('device_token','device_type'));
     if(empty($_REQUEST['device_info'])){
       $_REQUEST['device_info'] = '';
     }
+    if(!empty($_REQUEST['token_type']) && $_REQUEST['token_type'] == 'amp'){
+      $new_token = self::$firebase->convert($_REQUEST['device_token']);
+      if(!empty($new_token)){
+        $_REQUEST['device_token'] = $new_token;
+        $_REQUEST['firebase'] = 1;
+      }
+    }
     if(!isset($_REQUEST['active'])){
       $_REQUEST['active'] = 1;
     }
-    if(!empty($_REQUEST['latitude'])){
-      $_REQUEST['latitude'] = $_REQUEST['latitude'];
+    if(!empty($_REQUEST['firebase']) && $_REQUEST['device_type'] == 'safari'){
+      $_REQUEST['firebase'] = 0;
     }
     if(empty($_REQUEST['latitude']) OR empty($_REQUEST['longitude'])){
       $_REQUEST['latitude'] = '0';
@@ -230,6 +272,7 @@ class smpush_api extends smpush_controller{
         $_REQUEST['longitude'] = $locationinfo['longitude'];
       }
     }
+
     global $wpdb;
     $device_type = $_REQUEST['device_type'];
     $types_name = $wpdb->get_row("SELECT ios_name,iosfcm_name,android_name,wp_name,bb_name,chrome_name,safari_name,firefox_name,wp10_name,fbmsn_name,fbnotify_name,opera_name,edge_name,samsung_name,email_name FROM ".$wpdb->prefix."push_connection WHERE id='".self::$apisetting['def_connection']."'", ARRAY_A);
@@ -246,12 +289,18 @@ class smpush_api extends smpush_controller{
       self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {active_name}='$_REQUEST[active]',{info_name}='$_REQUEST[device_info]',{latitude_name}='$_REQUEST[latitude]',{longitude_name}='$_REQUEST[longitude]',{gpstime_name}='".current_time('timestamp')."' WHERE {id_name}='$tokenid'"));
       if(!empty($_REQUEST['user_id'])){
         self::$pushdb->query(self::parse_query("UPDATE {tbname} SET userid='$_REQUEST[user_id]' WHERE {id_name}='$tokenid'"));
+        if(!empty($_REQUEST['firebase'])){
+          self::$firebase->subscribeToTopic('user_'.$_REQUEST['user_id'], $_REQUEST['device_token']);
+        }
         if(isset($_REQUEST['channels_id'])){
           update_user_meta($_REQUEST['user_id'], 'smpush_subscribed_channels', $_REQUEST['channels_id']);
         }
       }
       elseif(is_user_logged_in()){
         self::$pushdb->query(self::parse_query("UPDATE {tbname} SET userid='".get_current_user_id()."' WHERE {id_name}='$tokenid'"));
+        if(!empty($_REQUEST['firebase'])){
+          self::$firebase->subscribeToTopic('user_'.get_current_user_id(), $_REQUEST['device_token']);
+        }
         setcookie('smpush_linked_user', 'true', (time()+2592000), COOKIEPATH);
       }
       do_action('smpush_update_subscriber', $tokenid, $_REQUEST['device_type']);
@@ -259,11 +308,17 @@ class smpush_api extends smpush_controller{
       return $this->output(1, __('Token saved successfully', 'smpush-plugin-lang'));
     }
     do_action('smpush_new_subscriber_presaved', $_REQUEST['device_token'], $_REQUEST['device_type']);
-    self::$pushdb->query(self::parse_query("INSERT INTO {tbname} ({token_name},{md5token_name},{type_name},{info_name},{active_name},{latitude_name},{longitude_name},{gpstime_name},{postdate}) VALUES ('$_REQUEST[device_token]','".md5($_REQUEST['device_token'])."','$device_type','$_REQUEST[device_info]','$_REQUEST[active]','$_REQUEST[latitude]','$_REQUEST[longitude]','".current_time('timestamp')."','".gmdate('Y-m-d H:i:s', current_time('timestamp'))."')"));
+    self::$pushdb->query(self::parse_query("INSERT INTO {tbname} ({token_name},{md5token_name},{type_name},{info_name},{active_name},{latitude_name},{longitude_name},{gpstime_name},{postdate},{firebase_name}) VALUES ('$_REQUEST[device_token]','".md5($_REQUEST['device_token'])."','$device_type','$_REQUEST[device_info]','$_REQUEST[active]','$_REQUEST[latitude]','$_REQUEST[longitude]','".current_time('timestamp')."','".gmdate('Y-m-d H:i:s', current_time('timestamp'))."','1')"));
     $tokenid = self::$pushdb->insert_id;
     if($tokenid === false){
       return $this->output(0, __('Push database connection error', 'smpush-plugin-lang'));
     }
+
+    if(!empty($_REQUEST['firebase'])){
+      self::$firebase->subscribeToTopic('public', $_REQUEST['device_token']);
+      self::$firebase->subscribeToTopic($_REQUEST['device_type'], $_REQUEST['device_token']);
+    }
+
     $this->saveStats($_REQUEST['device_type'], 'newdevice');
     if(!empty($_REQUEST['user_id'])){
       self::$pushdb->query(self::parse_query("UPDATE {tbname} SET userid='$_REQUEST[user_id]' WHERE {id_name}='$tokenid'"));
@@ -372,27 +427,49 @@ class smpush_api extends smpush_controller{
     global $wpdb;
     if(!empty($oneuserid)){
       $defconid = 0;
-      $where = "userid='$oneuserid'";
+      $where = SMPUSHTBPRE."push_relation.userid='$oneuserid'";
     }
     else{
       $defconid = self::$apisetting['def_connection'];
-      $where = "token_id='$tokenid' AND connection_id='$defconid'";
+      $where = SMPUSHTBPRE."push_relation.token_id='$tokenid' AND ".SMPUSHTBPRE."push_relation.connection_id='$defconid'";
     }
-    $subschans = $wpdb->get_results("SELECT channel_id FROM ".SMPUSHTBPRE."push_relation WHERE $where");
+    $newchannels = explode(',', $newchannels);
+
+    $subschans = self::$pushdb->get_results(self::parse_query("SELECT ".SMPUSHTBPRE."push_relation.channel_id,{tbname}.{firebase_name} AS firebase,{tbname}.{token_name} AS token FROM ".SMPUSHTBPRE."push_relation
+    LEFT JOIN {tbname} ON({tbname}.{id_name}=".SMPUSHTBPRE."push_relation.token_id)
+    WHERE $where"));
+    $chids = [];
+    $chinfos = [];
     if($subschans){
       foreach($subschans AS $subschan){
         $chids[] = $subschan->channel_id;
+        $chinfos[$subschan->channel_id] = $subschan;
       }
-      $chids = implode(',', $chids);
-      $wpdb->query("UPDATE ".SMPUSHTBPRE."push_channels SET `count`=`count`-1 WHERE id IN($chids)");
     }
-    $wpdb->query("DELETE FROM ".SMPUSHTBPRE."push_relation WHERE $where");
-    if(!empty($newchannels)){
-      $chids = explode(',', $newchannels);
-      foreach($chids AS $chid){
-        $wpdb->query("INSERT INTO ".SMPUSHTBPRE."push_relation (channel_id,token_id,connection_id,userid) VALUES ('$chid','$tokenid','$defconid','$oneuserid')");
+
+    $channels_toadd = array_diff($newchannels, $chids);
+    if(!empty($channels_toadd)){
+      if(!empty($tokenid)){
+        $newtoken = self::$pushdb->get_row(self::parse_query("SELECT {firebase_name} AS firebase,{token_name} AS token FROM {tbname} WHERE {id_name}='$tokenid'"));
       }
-      $wpdb->query("UPDATE ".SMPUSHTBPRE."push_channels SET `count`=`count`+1 WHERE id IN($newchannels)");
+      foreach($channels_toadd AS $chid){
+        $wpdb->query("INSERT INTO ".SMPUSHTBPRE."push_relation (channel_id,token_id,connection_id,userid) VALUES ('$chid','$tokenid','$defconid','$oneuserid')");
+        if(!empty($newtoken) && $newtoken->firebase == 1){
+          self::$firebase->subscribeToTopic('channel_'.$chid, $newtoken->token);
+        }
+      }
+      $wpdb->query("UPDATE ".SMPUSHTBPRE."push_channels SET `count`=`count`+1 WHERE id IN(".implode(',', $channels_toadd).")");
+    }
+
+    $channels_todel = array_diff($chids, $newchannels);
+    if(!empty($channels_todel)){
+      foreach($channels_todel AS $chid){
+        $wpdb->query("DELETE FROM ".SMPUSHTBPRE."push_relation WHERE $where AND channel_id='$chid'");
+        if($chinfos[$chid]->firebase == 1){
+          self::$firebase->unsubscribeFromTopic('channel_'.$chid, $chinfos[$chid]->token);
+        }
+      }
+      $wpdb->query("UPDATE ".SMPUSHTBPRE."push_channels SET `count`=`count`-1 WHERE id IN(".implode(',', $channels_todel).")");
     }
   }
 
@@ -1035,6 +1112,8 @@ class smpush_api extends smpush_controller{
       $subscription['radius'] = $_POST['radius'];
     }
 
+    $subscription['temp'] = (empty($_POST['temp']))? 0 : intval($_POST['temp']);
+
     $subscription['web'] = (empty($_POST['web']))? 0 : 1;
     $subscription['mobile'] = (empty($_POST['mobile']))? 0 : 1;
     $subscription['msn'] = (empty($_POST['msn']))? 0 : 1;
@@ -1106,6 +1185,7 @@ class smpush_api extends smpush_controller{
     }
 
     $subscription['keywords'] = (empty($userSubs['keywords']))? '' : $userSubs['keywords'];
+    $subscription['temp'] = $userSubs['temp'];
     $subscription['web'] = (isset($userSubs['web']))? $userSubs['web'] : 1;
     $subscription['mobile'] = (isset($userSubs['mobile']))? $userSubs['mobile'] : 1;
     $subscription['msn'] = (isset($userSubs['msn']))? $userSubs['msn'] : 1;

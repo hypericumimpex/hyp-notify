@@ -37,7 +37,7 @@ class smpush_amp extends smpush_helper{
 
   private function activated_sw_file(){
     if($this->options['desktop_webpush'] == 1){
-      return ABSPATH.'/smart_push_sw.js';
+      return ABSPATH.'/smart_firebase_sw.js';
     }
     else{
       return ABSPATH.'/smart_service_worker.js';
@@ -137,11 +137,11 @@ class smpush_amp extends smpush_helper{
     if($this->options['amp_support'] == 0){
       return '';
     }
-    if (is_single() && ($this->options['amp_post_widget'] == 1 || $this->options['amp_post_shortcode'] == 1)) {
+    if (is_single() && ($this->options['amp_post_widget'] == 1 || $this->options['amp_post_shortcode'] == 1) && !$this->amp_web_push_loaded) {
       $this->amp_web_push_loaded = true;
       echo '<script async custom-element="amp-web-push" src="https://cdn.ampproject.org/v0/amp-web-push-0.1.js"></script>';
     }
-    elseif (is_page() && ($this->options['amp_page_widget'] == 1 || $this->options['amp_page_shortcode'] == 1)) {
+    elseif (is_page() && ($this->options['amp_page_widget'] == 1 || $this->options['amp_page_shortcode'] == 1) && !$this->amp_web_push_loaded) {
       $this->amp_web_push_loaded = true;
       echo '<script async custom-element="amp-web-push" src="https://cdn.ampproject.org/v0/amp-web-push-0.1.js"></script>';
     }
@@ -157,6 +157,7 @@ class smpush_amp extends smpush_helper{
     $btn_css = 'style="margin: auto;width: 280px;box-sizing: border-box;border:none;border-radius:3px;padding:0 16px;min-width:64px;height:36px;vertical-align:middle;text-align:center;text-overflow:ellipsis;text-transform:uppercase;color:#fff;background-color:#2c95f3;box-shadow:0 3px 1px -2px rgba(0,0,0,.2),0 2px 2px 0 rgba(0,0,0,.14),0 1px 5px 0 rgba(0,0,0,.12);font-size:14px;font-weight:500;line-height:36px;overflow:hidden;outline:none;cursor:pointer;transition:box-shadow 0.2s;"';
     $ampoutput = '';
     if($this->amp_web_push_loaded === false){
+      $this->amp_web_push_loaded = true;
       $ampoutput .= '<script async custom-element="amp-web-push" src="https://cdn.ampproject.org/v0/amp-web-push-0.1.js"></script>';
     }
     $ampoutput .= '<amp-web-push'
