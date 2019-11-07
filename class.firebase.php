@@ -26,7 +26,9 @@ class smpush_firebase {
   }
 
   private function authorize(){
-    require smpush_dir.'/lib/google/autoload.php';
+    if(!empty($this->httpClient)) return true;
+
+    require_once smpush_dir.'/lib/google/autoload.php';
     $client = new Google_Client();
     $this->firebase_config = json_decode($this->apisettings['firebase_config'], true);
     $client->useApplicationDefaultCredentials();

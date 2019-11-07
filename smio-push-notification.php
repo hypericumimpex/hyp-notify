@@ -4,7 +4,7 @@ Plugin Name: HYP Smart Notifications
 Plugin URI: https://github.com/hypericumimpex/hyp-notify/
 Description: Provides a complete solution to send web and mobile notification messages to platforms iOS, Android, Chrome, Safari, Firefox, Opera, Edge, Samsung Browser, Windows Phone 8, Windows 10, BlackBerry 10, FB Messenger and Newsletter.
 Author: Hypericum
-Version: 9.0
+Version: 9.1
 Author URI: https://github.com/hypericumimpex/
 */
 
@@ -14,8 +14,8 @@ define('smpush_dir', plugin_dir_path(__FILE__));
 define('smpush_imgpath', plugins_url('/images', __FILE__));
 define('smpush_csspath', plugins_url('/css', __FILE__));
 define('smpush_jspath', plugins_url('/js', __FILE__));
-define('SMPUSHVERSION', 9);
-define('smpush_env', 'production');//debug, production
+define('SMPUSHVERSION', 9.1);
+define('smpush_env', 'production');//debug, production or logs
 define('smpush_env_demo', false);
 define('smpush_mobapp_mode', false);
 

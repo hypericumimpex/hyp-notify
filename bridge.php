@@ -320,6 +320,10 @@ class smpush_bridge extends smpush_helper {
   
   public function get_link(){
     $this->CheckParams(array('id'));
+    if(!empty($_GET['call']) && $_GET['call'] == 'silent'){
+      $this->saveStats($_REQUEST['platform'], 'clicks', $_GET['id']);
+      exit;
+    }
     $message = $this->wpdb->get_row("SELECT id,options FROM ".$this->table_prefix."push_archive WHERE id='$_REQUEST[id]'", ARRAY_A);
     $message['options'] = unserialize($message['options']);
     if(!empty($_REQUEST['platform'])){
@@ -330,6 +334,14 @@ class smpush_bridge extends smpush_helper {
     }
     else{
       $link = urldecode(self::cleanString($message['options']['desktop_link']));
+    }
+    if(!empty($link) && !empty($message['options']['desktop_utm_source'])){
+      $utm = 'utm_source='.$message['options']['desktop_utm_source'].'&utm_medium='.$message['options']['desktop_utm_medium'].'&utm_campaign='.$message['options']['desktop_utm_campaign'];
+      if(strpos($link, '?') !== false){
+        $link .= '&'.$utm;
+      } else {
+        $link .= '?'.$utm;
+      }
     }
     if(empty($link)){
       $link = $this->apisetting['home_url'];

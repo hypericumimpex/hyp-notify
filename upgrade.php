@@ -1004,6 +1004,9 @@ if($version <= 8.487){
 
   $version = 9;
 }
+if($version <= 9){
+  $version = 9.1;
+}
 
 delete_transient('smpush_update_notice');
 @unlink(smpush_cache_dir.'/settings');

@@ -82,38 +82,45 @@
     </td>
     </tr>
     <tr valign="middle"><td class="first"><?php echo __('Direction', 'smpush-plugin-lang')?></td>
-    <td>
-      <select name="desktop_dir">
-        <option value="auto"><?php echo __('Auto', 'smpush-plugin-lang')?></option>
-        <option value="rtl" <?php if(self::loadData('options','desktop_dir') == "rtl"): ?>selected="selected"<?php endif;?>><?php echo __('RTL', 'smpush-plugin-lang')?></option>
-        <option value="ltr" <?php if(self::loadData('options','desktop_dir') == "ltr"): ?>selected="selected"<?php endif;?>><?php echo __('LTR', 'smpush-plugin-lang')?></option>
-      </select>
-    </td>
-    </tr>
-    <tr>
-      <tr valign="middle"><td class="first"><?php echo __('Chrome Actions', 'smpush-plugin-lang')?></td>
       <td>
-      <div class="smpushChromeActions">
-        <?php
-        $desktop_actions = self::loadData('options','desktop_actions');
-        if(empty($desktop_actions)){
-          $desktop_actions = array('id' => array(0 => ''), 'text' => array(0 => ''), 'icon' => array(0 => ''), 'link' => array(0 => ''));
-        }
-        for($i=0;$i<count($desktop_actions['id']);$i++):
-        ?>
-        <div class="smpushlinebetween">
-          <input value="<?php echo $i;?>" type="hidden" class="actionsLoop" />
-          <input name="desktop_actions[id][<?php echo $i;?>]" value="<?php echo $desktop_actions['id'][$i];?>" onkeyup="smpushremoveNonAlpha(this)"  onchange="smpushremoveNonAlpha(this)" type="text" size="8" placeholder="<?php echo __('Action ID', 'smpush-plugin-lang')?>">
-          <input name="desktop_actions[text][<?php echo $i;?>]" value="<?php echo $desktop_actions['text'][$i];?>" type="text" size="15" placeholder="<?php echo __('Button Text', 'smpush-plugin-lang')?>">
-          <input class="smpush_upload_field_action<?php echo $i;?>" name="desktop_actions[icon][<?php echo $i;?>]" value="<?php echo $desktop_actions['icon'][$i];?>" type="url" size="25" placeholder="<?php echo __('Icon URL', 'smpush-plugin-lang')?>">
-          <input class="smpush_upload_file_btn button action" data-container="smpush_upload_field_action<?php echo $i;?>" type="button" value="<?php echo __('Select File', 'smpush-plugin-lang')?>" />
-          <br />
-          <input name="desktop_actions[link][<?php echo $i;?>]" value="<?php echo $desktop_actions['link'][$i];?>" type="url" size="50" placeholder="<?php echo __('Open Link', 'smpush-plugin-lang')?>">
-          <button type="button" class="button" onclick="smpushActionAddRow(this)"><?php echo __('Add', 'smpush-plugin-lang')?></button>
-          <button type="button" class="button" onclick="smpushActionDelRow(this)"><?php echo __('Remove', 'smpush-plugin-lang')?></button>
-        </div>
-        <?php endfor;?>
-      </div>
+        <select name="desktop_dir">
+          <option value="auto"><?php echo __('Auto', 'smpush-plugin-lang')?></option>
+          <option value="rtl" <?php if(self::loadData('options','desktop_dir') == "rtl"): ?>selected="selected"<?php endif;?>><?php echo __('RTL', 'smpush-plugin-lang')?></option>
+          <option value="ltr" <?php if(self::loadData('options','desktop_dir') == "ltr"): ?>selected="selected"<?php endif;?>><?php echo __('LTR', 'smpush-plugin-lang')?></option>
+        </select>
       </td>
     </tr>
+    <tr valign="middle"><td class="first"><?php echo __('Chrome Actions', 'smpush-plugin-lang')?></td>
+      <td>
+        <div class="smpushChromeActions">
+          <?php
+          $desktop_actions = self::loadData('options','desktop_actions');
+          if(empty($desktop_actions)){
+            $desktop_actions = array('id' => array(0 => ''), 'text' => array(0 => ''), 'icon' => array(0 => ''), 'link' => array(0 => ''));
+          }
+          for($i=0;$i<count($desktop_actions['id']);$i++):
+          ?>
+          <div class="smpushlinebetween">
+            <input value="<?php echo $i;?>" type="hidden" class="actionsLoop" />
+            <input name="desktop_actions[id][<?php echo $i;?>]" value="<?php echo $desktop_actions['id'][$i];?>" onkeyup="smpushremoveNonAlpha(this)"  onchange="smpushremoveNonAlpha(this)" type="text" size="8" placeholder="<?php echo __('Action ID', 'smpush-plugin-lang')?>">
+            <input name="desktop_actions[text][<?php echo $i;?>]" value="<?php echo $desktop_actions['text'][$i];?>" type="text" size="15" placeholder="<?php echo __('Button Text', 'smpush-plugin-lang')?>">
+            <input class="smpush_upload_field_action<?php echo $i;?>" name="desktop_actions[icon][<?php echo $i;?>]" value="<?php echo $desktop_actions['icon'][$i];?>" type="url" size="25" placeholder="<?php echo __('Icon URL', 'smpush-plugin-lang')?>">
+            <input class="smpush_upload_file_btn button action" data-container="smpush_upload_field_action<?php echo $i;?>" type="button" value="<?php echo __('Select File', 'smpush-plugin-lang')?>" />
+            <br />
+            <input name="desktop_actions[link][<?php echo $i;?>]" value="<?php echo $desktop_actions['link'][$i];?>" type="url" size="50" placeholder="<?php echo __('Open Link', 'smpush-plugin-lang')?>">
+            <button type="button" class="button" onclick="smpushActionAddRow(this)"><?php echo __('Add', 'smpush-plugin-lang')?></button>
+            <button type="button" class="button" onclick="smpushActionDelRow(this)"><?php echo __('Remove', 'smpush-plugin-lang')?></button>
+          </div>
+          <?php endfor;?>
+        </div>
+      </td>
+    </tr>
+  <tr valign="middle">
+    <td class="first"><?php echo __('UTM Parameters', 'smpush-plugin-lang')?></td>
+    <td>
+      <input name="desktop_utm_source" value="<?php echo self::loadData('options','desktop_utm_source');?>" type="text" size="30" placeholder="<?php echo __('Source', 'smpush-plugin-lang')?>"><br />
+      <input name="desktop_utm_medium" value="<?php echo self::loadData('options','desktop_utm_medium');?>" type="text" size="30" placeholder="<?php echo __('Medium', 'smpush-plugin-lang')?>"><br />
+      <input name="desktop_utm_campaign" value="<?php echo self::loadData('options','desktop_utm_campaign');?>" type="text" size="30" placeholder="<?php echo __('Campaign', 'smpush-plugin-lang')?>">
+    </td>
+  </tr>
 </table>

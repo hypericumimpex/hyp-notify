@@ -155,12 +155,16 @@ class smpush_cronsend extends smpush_controller {
       $api = new smpush_api('', '', '', true);
       foreach($webpushTokens as $webpushToken){
         if(substr($webpushToken->device_token, 0, 1) == '{'){
-          self::log('converting token: '.$webpushToken->device_token);
+          if(smpush_env == 'logs'){
+            self::log('converting token: '.$webpushToken->device_token);
+          }
           $new_token = self::$firebase->convert($webpushToken->device_token);
           if($new_token === false){
             self::$pushdb->query(self::parse_query("UPDATE {tbname} SET {active_name}='0' WHERE {id_name}='$webpushToken->id'"));
           } elseif(! empty($new_token)){
-            self::log('success converted to: '.$new_token);
+            if(smpush_env == 'logs'){
+              self::log('success converted to: '.$new_token);
+            }
             $api->process_refresh_token($webpushToken->id, $new_token, $webpushToken->device_type);
           }
         }

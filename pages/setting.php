@@ -1195,7 +1195,7 @@
                       <td class="first"><?php echo __('Webhook Callback URL', 'smpush-plugin-lang')?></td>
                       <td>
                         <input type="text" value="<?php echo get_bloginfo('wpurl').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=callback" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
-                        <p class="description"><?php echo __('For how to setup Facebook Messenger', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/blog/91/how-to-setup-facebook-messenger/" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
+                        <p class="description"><?php echo __('For how to setup Facebook Messenger', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/product/push-notification-system/documentation#messenger-configurations" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
                       </td>
                     </tr>
                     <tr valign="top">
@@ -1382,7 +1382,7 @@
                       <td class="first"><?php echo __('Canvas URL', 'smpush-plugin-lang')?></td>
                       <td>
                         <input type="text" value="<?php echo get_bloginfo('wpurl').'/'.self::$apisetting['push_basename']; ?>/facebook/?action=canvas" class="regular-text" size="80" onclick="jQuery(this).select()" readonly />
-                        <p class="description"><?php echo __('For how to setup Facebook Notifications', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/blog/93/how-to-setup-facebook-notifications-application/" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
+                        <p class="description"><?php echo __('For how to setup Facebook Notifications', 'smpush-plugin-lang')?> <a href="https://smartiolabs.com/product/push-notification-system/documentation#facebook-notifications-configs" target="_blank"><?php echo __('click here', 'smpush-plugin-lang')?></a></p>
                       </td>
                     </tr>
                     <tr valign="top">

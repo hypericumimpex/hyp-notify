@@ -226,6 +226,7 @@ function smpush_endpoint_unsubscribe(subscriptionId) {
     smpush_setCookie("smpush_device_token", "false", -1);
     smpush_setCookie("smpush_desktop_request", "false", -1);
     smpush_setCookie("smpush_desktop_welcmsg_seen", "false", -1);
+    smpush_setCookie("smpush_desktop_blocked", "true", 365);
   });
 }
 
@@ -272,6 +273,11 @@ function smpush_bootstrap_init(){
   if(! pushSupported){
     smpushDrawUnSupportedPopup();
     smpush_debug("Browser not support push notification");
+    return;
+  }
+  
+  if(smpush_getCookie("smpush_desktop_blocked") == "true"){
+    smpush_debug("User unsubscribed using unsubscrib button");
     return;
   }
   
@@ -568,10 +574,11 @@ function smpush_unsubscribe() {
   messaging.getToken().then((currentToken) => {
     messaging.deleteToken(currentToken);
     smpush_endpoint_unsubscribe(currentToken);
-  }).catch(function(e) {
     smpush_isPushEnabled = false;
     pushButton.removeAttr("disabled");
     pushButton.html("'.addslashes(self::$apisetting['desktop_btn_subs_text']).'");
+  }).catch(function(e) {
+    smpush_debug("failed unsubscribe...", e);
     return;
   });
 }

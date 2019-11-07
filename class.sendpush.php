@@ -752,6 +752,9 @@ class smpush_sendpush extends smpush_controller {
         'desktop_vibrate' => $_POST['desktop_vibrate'],
         'desktop_silent' => (isset($_POST['desktop_silent']))? 1 : 0,
         'desktop_dir' => $_POST['desktop_dir'],
+        'desktop_utm_source' => $_POST['desktop_utm_source'],
+        'desktop_utm_medium' => $_POST['desktop_utm_medium'],
+        'desktop_utm_campaign' => $_POST['desktop_utm_campaign'],
         'desktop_actions' => $actions,
         'email' => $_POST['email'],
         'emailjson' => $_POST['emailjson'],
@@ -2730,13 +2733,22 @@ class smpush_sendpush extends smpush_controller {
     $messagePayload['title'] = self::cleanString(self::$sendoptions['desktop_title'], true);
     $messagePayload['body'] = html_entity_decode(preg_replace("/U\+([0-9A-F]{4,5})/i", "&#x\\1;", self::cleanString($message)), ENT_NOQUOTES, 'UTF-8');
     $target = $siteurl.'/'.self::$apisetting['push_basename'].'/get_link/?id='.self::$sendoptions['msgid'].'&platform='.$device_type;
+    if(!empty(self::$sendoptions['desktop_link']) && !empty(self::$sendoptions['desktop_utm_source'])){
+      $utm = 'utm_source='.self::$sendoptions['desktop_utm_source'].'&utm_medium='.self::$sendoptions['desktop_utm_medium'].'&utm_campaign='.self::$sendoptions['desktop_utm_campaign'];
+      if(strpos(self::$sendoptions['desktop_link'], '?') !== false){
+        self::$sendoptions['desktop_link'] .= '&'.$utm;
+      } else {
+        self::$sendoptions['desktop_link'] .= '?'.$utm;
+      }
+    }
     if(self::$apisetting['no_disturb'] == 1){
       $messagePayload['tag'] = $siteurl;
     }
     else{
       $messagePayload['tag'] = self::$sendoptions['msgid'];
     }
-    $messagePayload['data']['target'] = $target;
+    $messagePayload['data']['target'] = self::$sendoptions['desktop_link'];
+    $messagePayload['data']['click'] = 'fetch("'.$target.'&call=silent'.'");';
     $messagePayload['renotify'] = (self::$apisetting['no_disturb'] == 1)? true : false;
 
     $messagePayload['icon'] = (!empty(self::$sendoptions['desktop_icon']))? self::cleanString(urldecode(self::$sendoptions['desktop_icon'])) : self::cleanString(self::$sendoptions['desktop_icon']);

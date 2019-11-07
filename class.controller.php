@@ -479,7 +479,7 @@ class smpush_controller extends smpush_helper {
     );
     $schedules['smpush_recurring_min'] = array(
       'interval' => 180,
-      'display' => __('Every 15 minutes')
+      'display' => __('Every 3 minutes')
     );
     return $schedules;
   }
@@ -607,7 +607,10 @@ class smpush_controller extends smpush_helper {
         curl_setopt($ch, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
       }
     }
-    curl_exec($ch);
+    $result = curl_exec($ch);
+    if(smpush_env == 'logs'){
+      self::log('crob-job has been called silently !');
+    }
     curl_close($ch);
   }
 
@@ -660,6 +663,7 @@ class smpush_controller extends smpush_helper {
   }
 
   public static function setup_bridge(){
+    flush_rewrite_rules();
     @unlink(ABSPATH.'/smart_manifest.js');
     @unlink(ABSPATH.'/smart_service_worker.js');
     @unlink(ABSPATH.'/smart_push_sw.js');
